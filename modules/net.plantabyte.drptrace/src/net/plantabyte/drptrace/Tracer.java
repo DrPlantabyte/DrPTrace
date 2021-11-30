@@ -19,22 +19,21 @@ public class Tracer {
 		var firstPoint = pathPoints[0];
 		int start = 0;
 		for(int c = 0; c < numBeziers; c++){
-			int end = start + intervalSize + 1;
+			int end = Math.min(start + intervalSize, numPoints); // start and end are both inclusive
+			// note: exclude end points from fitting
 			final Vec2[] buffer;
-			if(end >= numPoints && pathPoints[0] != pathPoints[numPoints-1]){
-				// need to close the loop
-				buffer = new Vec2[numPoints-start+1];
-				System.arraycopy(pathPoints, start, buffer, 0, buffer.length-1);
-				buffer[buffer.length-1] = firstPoint;
+			if(end - start < 3){
+				beziers.add(new BezierCurve(pathPoints[start], pathPoints[end % numPoints]));
 			} else {
-				end = Math.min(end, numPoints);
-				buffer = new Vec2[end-start];
-				System.arraycopy(pathPoints, start, buffer, 0, buffer.length);
+				buffer = new Vec2[end - start - 2];
+				System.arraycopy(pathPoints, start + 1, buffer, 0, buffer.length);
+				var b = new BezierCurve(pathPoints[start], buffer[0],
+						buffer[buffer.length - 1], pathPoints[end]
+				);
+				b.fitToPoints(buffer);
+				beziers.add(b);
 			}
-			var b = new BezierCurve(buffer[0], buffer[1%buffer.length], buffer[(buffer.length*2-2)%buffer.length], buffer[buffer.length-1]);
-			b.fitToPoints(buffer);
-			beziers.add(b);
-			start = end-1;
+			start = end;
 		}
 		return beziers;
 	}
