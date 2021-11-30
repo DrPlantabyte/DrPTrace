@@ -46,7 +46,9 @@ public class Vec2 {
 	 * @return distance squared
 	 */
 	public double distSquared(Vec2 v){
-		return this.x*v.x + this.y*v.y;
+		double dx = v.x - this.x;
+		double dy = v.y - this.y;
+		return dx*dx + dy*dy;
 	}
 	/**
 	 * Returns the distance from this Vec2 to v
