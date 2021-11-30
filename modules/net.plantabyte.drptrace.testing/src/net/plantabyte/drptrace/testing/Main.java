@@ -49,7 +49,7 @@ public class Main {
 		}
 		showImg(bimg, 4);
 		var tracer = new Tracer();
-		List<BezierCurve> trace = tracer.tracePointPath(pathPoints.toArray(new Vec2[0]), 5);
+		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]), 7);
 		for(var b : trace){
 			BezierPlotter.drawBezierWithPoints(b, brush, Color.BLUE, Color.RED);
 		}
