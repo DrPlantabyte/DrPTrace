@@ -18,6 +18,10 @@ public class Vec2 {
 	/** origin point */
 	public static final Vec2 ORIGIN = new Vec2(0,0);
 	
+	@Override public String toString(){
+		return String.format("(%f, %f)", x, y);
+	}
+	
 	/**
 	 * Multiplies this Vec2 by a scalar value
 	 * @param scalar value to multiply by
