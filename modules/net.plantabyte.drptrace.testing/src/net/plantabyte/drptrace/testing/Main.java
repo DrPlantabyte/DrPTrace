@@ -7,6 +7,8 @@ import net.plantabyte.drptrace.utils.BezierPlotter;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +21,8 @@ public class Main {
 		}
 		//
 		
-		test1();
-		test2();
+//		test1();
+//		test2();
 		test3();
 		System.exit(0);
 	}
@@ -45,13 +47,13 @@ public class Main {
 		for(var p : pathPoints){
 			brush.fillRect((int)(p.x-1), (int)(p.y-1), 3, 3);
 		}
-		showImg(bimg);
+		showImg(bimg, 4);
 		var tracer = new Tracer();
-		List<BezierCurve> trace = tracer.tracePointPath(pathPoints);
+		List<BezierCurve> trace = tracer.tracePointPath(pathPoints.toArray(new Vec2[0]), 5);
 		for(var b : trace){
 			BezierPlotter.drawBezierWithPoints(b, brush, Color.BLUE, Color.RED);
 		}
-		showImg(bimg);
+		showImg(bimg, 4);
 	}
 	
 	private static void test1() {
@@ -95,7 +97,18 @@ public class Main {
 		System.out.println("...Done");
 	}
 	
-	private static void showImg(final BufferedImage bimg2) {
+	private static void showImg(final BufferedImage bimg) {
+		JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(bimg)));
+	}
+	private static void showImg(final BufferedImage bimg, int mag) {
+		int w = bimg.getWidth();
+		int h = bimg.getHeight();
+		BufferedImage bimg2 = new BufferedImage(w*mag, h*mag, BufferedImage.TYPE_INT_ARGB);
+		AffineTransform at = new AffineTransform();
+		at.scale(mag, mag);
+		AffineTransformOp scaleOp =
+				new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
+		bimg2 = scaleOp.filter(bimg, bimg2);
 		JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(bimg2)));
 	}
 	

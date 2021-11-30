@@ -21,7 +21,7 @@ public class BezierPlotter {
 			sumDist += parr[i].dist(parr[i+1]);
 		}
 		g.setColor(lineColor);
-		int count = (int)(sumDist+1);
+		int count = (int)Math.min(sumDist+1, 1000);
 		for(int i = 0; i < count; i++){
 			double t0 = (double)i / (double)count;
 			double t1 = (double)(i+1) / (double)count;

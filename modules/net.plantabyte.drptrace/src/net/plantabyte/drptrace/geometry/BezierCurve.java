@@ -88,6 +88,15 @@ public class BezierCurve {
 		this.fitToPoints(pathPoints.toArray(new Vec2[pathPoints.size()]));
 	}
 	public void fitToPoints(final Vec2[] pathPoints) {
+		if(pathPoints.length == 0){
+			// nothing at all
+			return;
+		}else if(pathPoints.length <= 2){
+			// no fitting, line segment
+			p[1] = pathPoints[0];
+			p[2] = pathPoints[pathPoints.length-1];
+			return;
+		}
 		// setup for using a function solver
 		double[] paramArray = {p[1].x, p[1].y, p[2].x, p[2].y};
 		Function<double[], Double> optiFunc = (double[] params) -> -1*RMSE(
