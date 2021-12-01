@@ -1,9 +1,10 @@
 package net.plantabyte.drptrace;
 
-import net.plantabyte.drptrace.geometry.BezierCurve;
-import net.plantabyte.drptrace.geometry.Vec2;
+import net.plantabyte.drptrace.geometry.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * The Tracer class provides methods for turning a series of points into a
@@ -110,4 +111,23 @@ public class Tracer {
 		}
 		return beziers;
 	}
+	
+	public Collection<List<BezierCurve>> traceAllShapes(final Bitmap bitmap) {
+		// first, find a patch of 1's in the bitmap
+		final int w = bitmap.getWidth(), h = bitmap.getHeight();
+		var searchedMap = new ByteArrayBitmap(w, h); // TODO: optimize with zorder bitmap
+		for(int y = 0; y < h; y++){
+			for(int x = 0; x < w; x++){
+				if(searchedMap.get(x, y) == 0 && bitmap.get(x, y) != 0){
+					// found a shape!
+					// recursively trace it and any nested voids/shapes
+					
+				}
+				searchedMap.set(x, y, (byte)1);
+			}
+		}
+		throw new UnsupportedOperationException("WIP");
+	}
+	
+	
 }
