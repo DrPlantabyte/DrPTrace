@@ -118,10 +118,9 @@ public class Tracer {
 		var searchedMap = new ByteArrayBitmap(w, h); // TODO: optimize with zorder bitmap
 		for(int y = 0; y < h; y++){
 			for(int x = 0; x < w; x++){
-				if(searchedMap.get(x, y) == 0 && bitmap.get(x, y) != 0){
-					// found a shape!
-					// recursively trace it and any nested voids/shapes
-					
+				if(searchedMap.get(x, y) == 0){
+					// algorithm: flood fill (both patches of 0's and 1's), and for
+					// each flood fill, trace the outer edge
 				}
 				searchedMap.set(x, y, (byte)1);
 			}
