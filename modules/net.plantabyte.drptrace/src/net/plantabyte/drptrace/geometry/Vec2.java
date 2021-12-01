@@ -59,4 +59,21 @@ public class Vec2 {
 		return Math.sqrt(distSquared(v));
 	}
 	
+	/**
+	 * Checks equality with another Vec2
+	 * @param other Other object
+	 * @return Returns tru if this Vec2 has same x and y coordinates as other
+	 * Vec2 (returns false if other is not a Vec2)
+	 */
+	@Override public boolean equals(Object other){
+		return other == this || (other instanceof Vec2 && this.x == ((Vec2)other).x && this.y == ((Vec2)other).y );
+	}
+	
+	/**
+	 * Generates a hash code
+	 * @return a hash code
+	 */
+	@Override public int hashCode(){
+		return 2003 * Double.hashCode(this.y) + 1999 * Double.hashCode(this.x);
+	}
 }

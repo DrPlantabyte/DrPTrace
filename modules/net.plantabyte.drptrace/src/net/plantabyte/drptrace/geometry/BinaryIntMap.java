@@ -2,20 +2,24 @@ package net.plantabyte.drptrace.geometry;
 
 import java.util.Arrays;
 
-public class ByteArrayBitmap extends Bitmap{
+public class BinaryIntMap extends IntMap {
 	private final int width;
 	private final int height;
 	private final int subwidth;
 	private final byte[] data;
 	
-	public ByteArrayBitmap(final int width, final int height) {
+	public BinaryIntMap(final int width, final int height) {
 		this.width = width;
 		this.subwidth = width/8+1;
 		this.height = height;
 		this.data = new byte[subwidth*height];
 	}
 	
-	public int set(int x, int y, byte value){
+	public int set(int x, int y, byte value)
+			throws ArrayIndexOutOfBoundsException, IllegalArgumentException {
+		if((value & 0xFE) != 0) {
+			throw new IllegalArgumentException(String.format("%s can only accept values of 0 or 1", this.getClass().getName()));
+		}
 		final int i = width*y + x;
 		final int index = i >>> 3;
 		final byte shift = (byte)(i & 0x07);
@@ -58,8 +62,8 @@ public class ByteArrayBitmap extends Bitmap{
 	}
 	
 	@Override
-	public Bitmap clone() {
-		var copy = new ByteArrayBitmap(this.getWidth(), this.getHeight());
+	public IntMap clone() {
+		var copy = new BinaryIntMap(this.getWidth(), this.getHeight());
 		System.arraycopy(this.data, 0, copy.data, 0, this.data.length);
 		return copy;
 	}
