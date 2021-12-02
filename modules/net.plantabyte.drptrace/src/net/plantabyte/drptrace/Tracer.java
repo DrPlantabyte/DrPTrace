@@ -2,9 +2,7 @@ package net.plantabyte.drptrace;
 
 import net.plantabyte.drptrace.geometry.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * The Tracer class provides methods for turning a series of points into a
@@ -112,7 +110,7 @@ public class Tracer {
 		return beziers;
 	}
 	
-	public Collection<List<BezierCurve>> traceAllShapes(final IntMap bitmap) {
+	public Collection<List<BezierCurve>> traceAllShapes(final IntMap bitmap, final int smoothness) {
 		// first, find a patch of 1's in the bitmap
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
 		var searchedMap = new ZOrderBinaryMap(w, h);
@@ -128,9 +126,73 @@ public class Tracer {
 		throw new UnsupportedOperationException("WIP");
 	}
 	
-	private static void floodFill(final IntMap source, final ZOrderBinaryMap searchedMap, int x, int y){
-		int color = source.get(x,y);
-		
+	private List<Vec2> traceEdge(final IntMap source, final ZOrderBinaryMap searchedMap, final int x, final int y, final int smoothness){
+		// trace counter-clockwise around the edge
+		final int color = source.get(x,y);
+		final var pointPath = new LinkedList<Vec2>();
+		// first move up to top edge
+		int x2 = x, y2 = y;
+		do{
+			y2++;
+		} while(source.get(x2,y2) == color);
+		var pos = new Vec2i(x2, y2-1);
+		var startPos = pos;
+		var lastPos = pos.down();
+		do {
+			// get neighbors in counterclockwise order
+			var neighbors = neighborsCounterClockwise(pos, lastPos);
+			/// index 3 is lastPos
+			int firstSame = -1;
+			for(int i = 0; i < 4; i++){
+				int c = source.get(neighbors[i].x,neighbors[i].y);
+				if(c != color){
+					pointPath.add(midPoint(pos, neighbors[i]));
+				} else if(firstSame < 0) {
+					firstSame = i;
+				}
+			}
+			// move to next pos
+			if(firstSame < 0){
+				// no neighbors!
+				break;
+			}
+			lastPos = pos;
+			pos = neighbors[firstSame];
+		}while(!pos.equals(startPos)); // repeat until we loop back to start
+		// TODO: test this function
+		return new ArrayList<>(pointPath); // convert to array list for better performance downstream
+	}
+	private static void floodFill(final IntMap source, final ZOrderBinaryMap searchedMap, final int x, final int y){
+		final int color = source.get(x,y);
+		throw new UnsupportedOperationException("WIP");
 	}
 	
+	/**
+	 * Gets up, left, down, right neighbors in counter-clockwise order, ending at
+	 * <code>end</code>
+	 * @param center The point to rotate around
+	 * @param end Where the counter-clockwise sequence should end
+	 * @return An array of up, left, down, right neighbors, where the last index
+	 * (3) is equal to end
+	 */
+	private static Vec2i[] neighborsCounterClockwise(Vec2i center, Vec2i end){
+		Vec2i[] cc = new Vec2i[4];
+		Vec2i[] out = new Vec2i[4];
+		cc[0] = center.up();
+		cc[1] = center.left();
+		cc[2] = center.down();
+		cc[3] = center.right();
+		int i = 0;
+		for(i = 0; i < 3; i++){
+			if(cc[i].equals(end)) break;
+		}
+		for(int n = 0; n < 4; n++){
+			out[n] = cc[(n+i+1)%4];
+		}
+		return out;
+	}
+	
+	private static Vec2 midPoint(Vec2i a, Vec2i b){
+		return new Vec2(0.5*(a.x+b.x), 0.5*(a.y+b.y));
+	}
 }

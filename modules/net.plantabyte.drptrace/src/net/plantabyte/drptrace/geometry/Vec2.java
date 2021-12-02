@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.geometry;
 
-public class Vec2 {
+public final class Vec2 {
 	/** X value */
 	public final double x;
 	/** Y value */
