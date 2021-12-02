@@ -115,10 +115,10 @@ public class Tracer {
 	public Collection<List<BezierCurve>> traceAllShapes(final IntMap bitmap) {
 		// first, find a patch of 1's in the bitmap
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
-		var searchedMap = new ZOrderBinaryMap(w, h); // TODO: optimize with zorder bitmap
+		var searchedMap = new ZOrderBinaryMap(w, h);
 		for(int y = 0; y < h; y++){
 			for(int x = 0; x < w; x++){
-				if(searchedMap.get(x, y) == 0){
+				if(searchedMap.get(x, y) == 0){ // pixel not yet searched
 					// algorithm: flood fill (both patches of 0's and 1's), and for
 					// each flood fill, trace the outer edge
 				}
@@ -128,5 +128,9 @@ public class Tracer {
 		throw new UnsupportedOperationException("WIP");
 	}
 	
+	private static void floodFill(final IntMap source, final ZOrderBinaryMap searchedMap, int x, int y){
+		int color = source.get(x,y);
+		
+	}
 	
 }
