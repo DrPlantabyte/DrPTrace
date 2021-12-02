@@ -2,13 +2,13 @@ package net.plantabyte.drptrace.geometry;
 
 import java.util.Arrays;
 
-public class BinaryIntMap extends IntMap {
+public class ZOrderBinaryMap extends IntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow;
 	private final long[] data;
 	
-	public BinaryIntMap(final int width, final int height) {
+	public ZOrderBinaryMap(final int width, final int height) {
 		this.width = width;
 		this.chunksPerRow = width/8+1;
 		this.height = height;
@@ -84,14 +84,14 @@ public class BinaryIntMap extends IntMap {
 	
 	@Override
 	public IntMap clone() {
-		var copy = new BinaryIntMap(this.getWidth(), this.getHeight());
+		var copy = new ZOrderBinaryMap(this.getWidth(), this.getHeight());
 		System.arraycopy(this.data, 0, copy.data, 0, this.data.length);
 		return copy;
 	}
 	
 	@Deprecated public static void main(String[] a){
 		final int w = 100, h = 50;
-		var b = new BinaryIntMap(w, h);
+		var b = new ZOrderBinaryMap(w, h);
 		for(int y = 0; y < b.getHeight(); y++) {
 			for(int x = 0; x < b.getWidth(); x++) {
 				if(Math.sqrt(x*x+y*y) < 50){

@@ -115,7 +115,7 @@ public class Tracer {
 	public Collection<List<BezierCurve>> traceAllShapes(final IntMap bitmap) {
 		// first, find a patch of 1's in the bitmap
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
-		var searchedMap = new BinaryIntMap(w, h); // TODO: optimize with zorder bitmap
+		var searchedMap = new ZOrderBinaryMap(w, h); // TODO: optimize with zorder bitmap
 		for(int y = 0; y < h; y++){
 			for(int x = 0; x < w; x++){
 				if(searchedMap.get(x, y) == 0){

@@ -2,7 +2,7 @@ package net.plantabyte.drptrace.utils;
 
 import net.plantabyte.drptrace.Tracer;
 import net.plantabyte.drptrace.geometry.BezierCurve;
-import net.plantabyte.drptrace.geometry.BinaryIntMap;
+import net.plantabyte.drptrace.geometry.ZOrderBinaryMap;
 
 import java.awt.image.BufferedImage;
 import java.util.*;
@@ -16,7 +16,7 @@ public class ImageTracer {
 			mask = 0x00FFFFFF;
 		}
 		argb = argb & mask;
-		var bitmap = new BinaryIntMap(img.getWidth(), img.getHeight());
+		var bitmap = new ZOrderBinaryMap(img.getWidth(), img.getHeight());
 		for(int y = 0; y < img.getHeight(); y++){
 			for(int x = 0; x < img.getWidth(); x++){
 				bitmap.set(
