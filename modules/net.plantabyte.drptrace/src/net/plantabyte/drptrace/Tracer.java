@@ -126,6 +126,9 @@ public class Tracer {
 		throw new UnsupportedOperationException("WIP");
 	}
 	
+	private static enum Dir{
+		UP, LEFT, DOWN, RIGHT, NONE
+	}
 	private static class Corner{
 		public final Vec2i topLeft;
 		public final Vec2i topRight;
@@ -159,6 +162,18 @@ public class Tracer {
 			return new Corner(this.bottomLeft, this.bottomRight, this.bottomLeft.down(), this.bottomRight.down());
 		}
 		
+		public Dir dirFrom(Corner origin){
+			if(this.topLeft.y > origin.topLeft.y){
+				return Dir.UP;
+			} else if(this.topLeft.y < origin.topLeft.y){
+				return Dir.DOWN;
+			} else if(this.topLeft.x > origin.topLeft.x){
+				return Dir.RIGHT;
+			} else if(this.topLeft.x < origin.topLeft.x){
+				return Dir.LEFT;
+			}
+		}
+		
 		@Override
 		public boolean equals(final Object o) {
 			if(this == o) {
@@ -182,12 +197,14 @@ public class Tracer {
 		private final IntMap src;
 		private Corner pos;
 		private final Corner initialPos;
+		private Corner oldPos;
 		private final int color;
 		private final List<Vec2> midpoints;
 		public TraceMachine(IntMap source, Vec2i topLeft, int color, List<Vec2> pointTacker){
 			this.src = source;
 			this.pos = new Corner(topLeft);
 			this.initialPos = pos;
+			this.oldPos = pos.down();
 			this.color = color;
 			this.midpoints = pointTacker;
 		}
@@ -198,8 +215,7 @@ public class Tracer {
 			return this.pos.equals(initialPos);
 		}
 		public void step(){
-			var oldPos = pos;
-			
+			var dir = pos.dirFrom(oldPos);
 			int tl_tr_bl_br = 0b0000;
 			if(isColor(pos.topLeft)) tl_tr_bl_br     |= 0b1000;
 			if(isColor(pos.topRight)) tl_tr_bl_br    |= 0b0100;
@@ -257,74 +273,66 @@ public class Tracer {
 				case 0b1001:
 					// #.
 					// .#
-					// uh-oh! turn right!
-					
-					
-			}
-			if(isColor(pos.bottomLeft)){
-				// ??
-				// #?
-				if(!isColor(pos.topLeft)){
-					// .?
-					// #?
-					midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
-					pos = pos.left();
-				} else {
-					// #?
-					// #?
-					if(!isColor(pos.topRight)){
-						// #.
-						// #?
+					// uh-oh! turn from previous direction
+					if(pos.isBelow(oldPos)){
+						// from top
+						midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
+						pos = pos.left();
+					} else if(pos.isAbove(oldPos)){
+						// from below
+						midpoints.add(midPoint(pos.topRight, pos.bottomRight));
+						pos = pos.right();
+					} else if(pos.isLeftOf(oldPos)){
+						// from right
+						midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
+						pos = pos.down();
+					} else if(pos.isRightOf(oldPos)){
+						// from left
 						midpoints.add(midPoint(pos.topLeft, pos.topRight));
 						pos = pos.up();
 					} else {
-						// ##
-						// #?
-						if(!isColor(pos.bottomRight)){
-							// ##
-							// #.
-							midpoints.add(midPoint(pos.topRight, pos.bottomRight));
-							pos = pos.right();
-						} else {
-							// ##
-							// ##
-							throw new IllegalStateException("Not on corner, all four are color");
-						}
+						throw new IllegalStateException("Machine old and current position equal, cannot move");
 					}
-				}
-			} else {
-				// ??
-				// .?
-				if(isColor(pos.bottomRight)){
-					// ??
+					break;
+				case 0b0110:
 					// .#
-					midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
-					pos = pos.down();
-				} else {
-					// ??
-					// ..
-					if(isColor(pos.topRight)){
-						// ?#
-						// ..
+					// #.
+					// uh-oh! turn from previous direction
+					if(pos.isBelow(oldPos)){
+						// from top
 						midpoints.add(midPoint(pos.topRight, pos.bottomRight));
 						pos = pos.right();
+					} else if(pos.isAbove(oldPos)){
+						// from below
+						midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
+						pos = pos.left();
+					} else if(pos.isLeftOf(oldPos)){
+						// from right
+						midpoints.add(midPoint(pos.topLeft, pos.topRight));
+						pos = pos.up();
+					} else if(pos.isRightOf(oldPos)){
+						// from left
+						midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
+						pos = pos.down();
 					} else {
-						// ?.
-						// ..
-						if(isColor(pos.topLeft)){
-							// #.
-							// ..
-							midpoints.add(midPoint(pos.topLeft, pos.topRight));
-							pos = pos.up();
-						} else {
-							// ..
-							// ..
-							throw new IllegalStateException("Not on corner, all four are off-color");
-						}
+						throw new IllegalStateException("Machine old and current position equal, cannot move");
 					}
-				}
+					break;
+				case 0b0000:
+					// ..
+					// ..
+					// error state, should not occur
+					throw new IllegalStateException("Not on corner, all four are off-color");
+				case 0b1111:
+					// ##
+					// ##
+					// error state, should not occur
+					throw new IllegalStateException("Not on corner, all four are color");
+				default:
+					throw new IllegalStateException("Unknown case: 0b"+Integer.toBinaryString(tl_tr_bl_br));
 			}
-			
+			System.out.println(oldPos.topLeft + " -> " + pos.topLeft + "\t0b"+Integer.toBinaryString(tl_tr_bl_br)); // TODO: remove
+			oldPos = pos;
 		}
 	}
 	public List<Vec2> followEdge(final IntMap source, final int x, final int y){ // TODO: make private

@@ -44,6 +44,13 @@ public class Main {
 		brush.fillOval(w/4+4,h/4+4,w/2-8,h/2-8);
 		brush.setColor(Color.BLACK);
 		brush.fillOval(w/4+16,h/4+16,w/2-32,h/2-32);
+		brush.setColor(Color.WHITE);
+		brush.fillRect(w/2,h/4+16,1,1);
+		brush.fillRect(w/2+1,h/4+16+1,1,1);
+		brush.fillRect(w/2+2,h/4+16+2,1,1);
+		brush.fillRect(w/2+2,h/4+16,1,1);
+		brush.fillRect(w/2+3,h/4+16+1,1,1);
+		brush.fillRect(w/2+4,h/4+16+2,1,1);
 		//
 		showImg(bimg, 4);
 		//
