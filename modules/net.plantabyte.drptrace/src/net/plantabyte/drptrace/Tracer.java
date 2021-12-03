@@ -126,7 +126,7 @@ public class Tracer {
 		throw new UnsupportedOperationException("WIP");
 	}
 	
-	private List<Vec2> traceEdge(final IntMap source, final ZOrderBinaryMap searchedMap, final int x, final int y, final int smoothness){
+	public List<Vec2> followEdge(final IntMap source, final int x, final int y){
 		// trace counter-clockwise around the edge
 		final int color = source.get(x,y);
 		final var pointPath = new LinkedList<Vec2>();
@@ -134,30 +134,35 @@ public class Tracer {
 		int x2 = x, y2 = y;
 		do{
 			y2++;
-		} while(source.get(x2,y2) == color);
+		} while(source.isInRange(x2, y2) && source.get(x2,y2) == color);
 		var pos = new Vec2i(x2, y2-1);
 		var startPos = pos;
 		var lastPos = pos.down();
 		do {
+			System.out.println("current: "+pos+"\tlast: "+lastPos); // TODO: remove
 			// get neighbors in counterclockwise order
 			var neighbors = neighborsCounterClockwise(pos, lastPos);
 			/// index 3 is lastPos
-			int firstSame = -1;
+			int nextSame = -1;
+			boolean offColorDetected = false;
 			for(int i = 0; i < 4; i++){
-				int c = source.get(neighbors[i].x,neighbors[i].y);
+				int c = source.isInRange(neighbors[i].x,neighbors[i].y) ? source.get(neighbors[i].x,neighbors[i].y) : ~color;
 				if(c != color){
-					pointPath.add(midPoint(pos, neighbors[i]));
-				} else if(firstSame < 0) {
-					firstSame = i;
+					var mp = midPoint(pos, neighbors[i]);
+					pointPath.add(mp);
+					System.out.println("\t"+mp); // TODO: remove
+					offColorDetected = true;
+				} else if(offColorDetected & nextSame < 0) {
+					nextSame = i;
 				}
 			}
 			// move to next pos
-			if(firstSame < 0){
+			if(nextSame < 0){
 				// no neighbors!
 				break;
 			}
 			lastPos = pos;
-			pos = neighbors[firstSame];
+			pos = neighbors[nextSame];
 		}while(!pos.equals(startPos)); // repeat until we loop back to start
 		// TODO: test this function
 		return new ArrayList<>(pointPath); // convert to array list for better performance downstream

@@ -27,6 +27,6 @@ public class ImageTracer {
 		}
 		// then trace the paths
 		Tracer tracer = new Tracer();
-		return tracer.traceAllShapes(bitmap);
+		return tracer.traceAllShapes(bitmap, smoothness);
 	}
 }

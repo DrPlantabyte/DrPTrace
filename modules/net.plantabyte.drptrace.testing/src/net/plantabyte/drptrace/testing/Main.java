@@ -4,6 +4,7 @@ import net.plantabyte.drptrace.Tracer;
 import net.plantabyte.drptrace.geometry.BezierCurve;
 import net.plantabyte.drptrace.geometry.Vec2;
 import net.plantabyte.drptrace.utils.BezierPlotter;
+import net.plantabyte.drptrace.utils.BufferedImageIntMap;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,8 +24,38 @@ public class Main {
 		
 //		test1();
 //		test2();
-		test3();
+//		test3();
+		test4();
 		System.exit(0);
+	}
+	
+	private static void test4() {
+		print("Test 4");
+		int h = 100, w = 200;
+		var bimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		var brush = bimg.createGraphics();
+		brush.setColor(Color.WHITE);
+		brush.fillRect(0,0,w,h);
+		//
+		brush.setColor(Color.BLACK);
+		brush.fillOval(w/4,h/4,w/2,h/2);
+		brush.fillOval(w/16,h/16,w/16,h/8);
+		brush.setColor(Color.WHITE);
+		brush.fillOval(w/4+4,h/4+4,w/2-8,h/2-8);
+		brush.setColor(Color.BLACK);
+		brush.fillOval(w/4+16,h/4+16,w/2-32,h/2-32);
+		//
+		showImg(bimg, 4);
+		//
+		Tracer tracer = new Tracer();
+		var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
+		brush.setColor(Color.GREEN);
+		for(var p : pp){
+			int px = (int)p.x;
+			int py = (int)p.y;
+			brush.fillRect(px-1,py-1,2,2);
+		}
+		showImg(bimg, 4);
 	}
 	
 	private static void test3() {
