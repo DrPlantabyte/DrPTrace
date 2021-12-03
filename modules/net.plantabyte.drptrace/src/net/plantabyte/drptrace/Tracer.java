@@ -218,12 +218,47 @@ public class Tracer {
 					midpoints.add(midPoint(pos.topLeft, pos.topRight));
 					pos = pos.up();
 					break;
+				case 0b0001:
+					// ..
+					// .#
+				case 0b0101:
+					// .#
+					// .#
+				case 0b1101:
+					// ##
+					// .#
+					midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
+					pos = pos.down();
+					break;
 				case 0b0100:
 					// .#
 					// ..
-				case 0b0100:
-					// .#
+				case 0b1100:
+					// ##
 					// ..
+				case 0b1110:
+					// ##
+					// #.
+					midpoints.add(midPoint(pos.topRight, pos.bottomRight));
+					pos = pos.right();
+					break;
+				case 0b0010:
+					// ..
+					// #.
+				case 0b0011:
+					// ..
+					// ##
+				case 0b0111:
+					// .#
+					// ##
+					midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
+					pos = pos.left();
+					break;
+				case 0b1001:
+					// #.
+					// .#
+					// uh-oh! turn right!
+					
 					
 			}
 			if(isColor(pos.bottomLeft)){
