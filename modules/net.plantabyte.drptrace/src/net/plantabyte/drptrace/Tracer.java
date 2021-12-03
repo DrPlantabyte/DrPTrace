@@ -126,6 +126,145 @@ public class Tracer {
 		throw new UnsupportedOperationException("WIP");
 	}
 	
+	private static class Corner{
+		public final Vec2i topLeft;
+		public final Vec2i topRight;
+		public final Vec2i bottomLeft;
+		public final Vec2i bottomRight;
+		public Corner(Vec2i topLeft){
+			this.topLeft = topLeft;
+			this.topRight = topLeft.right();
+			this.bottomLeft = topLeft.down();
+			this.bottomRight = bottomLeft.right();
+		}
+		private Corner(Vec2i topLeft, Vec2i topRight, Vec2i bottomLeft, Vec2i bottomRight){
+			this.topLeft = topLeft;
+			this.topRight = topRight;
+			this.bottomLeft = bottomLeft;
+			this.bottomRight = bottomRight;
+		}
+		public Corner left(){
+			return new Corner(this.topLeft.left(), this.topLeft, this.bottomLeft.left(), this.bottomLeft);
+		}
+		
+		public Corner right(){
+			return new Corner(this.topRight, this.topRight.right(), this.bottomRight, this.bottomRight.right());
+		}
+		
+		public Corner up(){
+			return new Corner(this.topLeft.up(), this.topRight.up(), this.topLeft, this.topRight);
+		}
+		
+		public Corner down(){
+			return new Corner(this.bottomLeft, this.bottomRight, this.bottomLeft.down(), this.bottomRight.down());
+		}
+		
+		@Override
+		public boolean equals(final Object o) {
+			if(this == o) {
+				return true;
+			}
+			if(o == null || getClass() != o.getClass()) {
+				return false;
+			}
+			final Corner corner = (Corner) o;
+			return topLeft.equals(corner.topLeft) && topRight.equals(
+					corner.topRight) && bottomLeft.equals(corner.bottomLeft)
+					&& bottomRight.equals(corner.bottomRight);
+		}
+		
+		@Override
+		public int hashCode() {
+			return Objects.hash(topLeft, topRight, bottomLeft, bottomRight);
+		}
+	}
+	private static class TraceMachine{
+		private final IntMap src;
+		private Corner pos;
+		private final Corner initialPos;
+		private final int color;
+		private final List<Vec2> midpoints;
+		public TraceMachine(IntMap source, Vec2i topLeft, int color, List<Vec2> pointTacker){
+			this.src = source;
+			this.pos = new Corner(topLeft);
+			this.initialPos = pos;
+			this.color = color;
+			this.midpoints = pointTacker;
+		}
+		private boolean isColor(Vec2i p){
+			return src.isInRange(p.x, p.y) && src.get(p.x, p.y) == color;
+		}
+		public boolean done(){
+			return this.pos.equals(initialPos);
+		}
+		public void step(){
+			var oldPos = pos;
+			if(isColor(pos.bottomLeft)){
+				// ??
+				// #?
+				if(!isColor(pos.topLeft)){
+					// .?
+					// #?
+					midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
+					pos = pos.left();
+				} else {
+					// #?
+					// #?
+					if(!isColor(pos.topRight)){
+						// #.
+						// #?
+						midpoints.add(midPoint(pos.topLeft, pos.topRight));
+						pos = pos.up();
+					} else {
+						// ##
+						// #?
+						if(!isColor(pos.bottomRight)){
+							// ##
+							// #.
+							midpoints.add(midPoint(pos.topRight, pos.bottomRight));
+							pos = pos.right();
+						} else {
+							// ##
+							// ##
+							throw new IllegalStateException("Not on corner, all four are color");
+						}
+					}
+				}
+			} else {
+				// ??
+				// .?
+				if(isColor(pos.bottomRight)){
+					// ??
+					// .#
+					midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
+					pos = pos.down();
+				} else {
+					// ??
+					// ..
+					if(isColor(pos.topRight)){
+						// ?#
+						// ..
+						midpoints.add(midPoint(pos.topRight, pos.bottomRight));
+						pos = pos.right();
+					} else {
+						// ?.
+						// ..
+						if(isColor(pos.topLeft)){
+							// #.
+							// ..
+							midpoints.add(midPoint(pos.topLeft, pos.topRight));
+							pos = pos.up();
+						} else {
+							// ..
+							// ..
+							throw new IllegalStateException("Not on corner, all four are off-color");
+						}
+					}
+				}
+			}
+			
+		}
+	}
 	public List<Vec2> followEdge(final IntMap source, final int x, final int y){
 		// trace counter-clockwise around the edge
 		final int color = source.get(x,y);
@@ -135,35 +274,12 @@ public class Tracer {
 		do{
 			y2++;
 		} while(source.isInRange(x2, y2) && source.get(x2,y2) == color);
-		var pos = new Vec2i(x2, y2-1);
-		var startPos = pos;
-		var lastPos = pos.down();
-		do {
-			System.out.println("current: "+pos+"\tlast: "+lastPos); // TODO: remove
-			// get neighbors in counterclockwise order
-			var neighbors = neighborsCounterClockwise(pos, lastPos);
-			/// index 3 is lastPos
-			int nextSame = -1;
-			boolean offColorDetected = false;
-			for(int i = 0; i < 4; i++){
-				int c = source.isInRange(neighbors[i].x,neighbors[i].y) ? source.get(neighbors[i].x,neighbors[i].y) : ~color;
-				if(c != color){
-					var mp = midPoint(pos, neighbors[i]);
-					pointPath.add(mp);
-					System.out.println("\t"+mp); // TODO: remove
-					offColorDetected = true;
-				} else if(offColorDetected & nextSame < 0) {
-					nextSame = i;
-				}
-			}
-			// move to next pos
-			if(nextSame < 0){
-				// no neighbors!
-				break;
-			}
-			lastPos = pos;
-			pos = neighbors[nextSame];
-		}while(!pos.equals(startPos)); // repeat until we loop back to start
+		// now follow edges around in counter-clockwise direction
+		TraceMachine m = new TraceMachine(source, new Vec2i(x2, y2), color, pointPath);
+		do{
+			m.step();
+		}while(!m.done());
+		
 		// TODO: test this function
 		return new ArrayList<>(pointPath); // convert to array list for better performance downstream
 	}
@@ -195,6 +311,32 @@ public class Tracer {
 			out[n] = cc[(n+i+1)%4];
 		}
 		return out;
+	}
+	
+	private static Vec2i nextNeighborCounterClockwise(Vec2i center, Vec2i from){
+		Vec2i[] cc = new Vec2i[4];
+		cc[0] = center.up();
+		cc[1] = center.left();
+		cc[2] = center.down();
+		cc[3] = center.right();
+		int i = 0;
+		for(i = 0; i < 3; i++){
+			if(cc[i].equals(from)) break;
+		}
+		return cc[(i+3)%4];
+	}
+	
+	private static Vec2i nextNeighborClockwise(Vec2i center, Vec2i from){
+		Vec2i[] cc = new Vec2i[4];
+		cc[0] = center.up();
+		cc[1] = center.right();
+		cc[2] = center.down();
+		cc[3] = center.left();
+		int i = 0;
+		for(i = 0; i < 3; i++){
+			if(cc[i].equals(from)) break;
+		}
+		return cc[(i+3)%4];
 	}
 	
 	private static Vec2 midPoint(Vec2i a, Vec2i b){
