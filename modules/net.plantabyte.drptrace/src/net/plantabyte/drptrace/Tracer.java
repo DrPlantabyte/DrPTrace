@@ -127,24 +127,35 @@ public class Tracer {
 	}
 	
 	private static enum Dir{
-		UP, LEFT, DOWN, RIGHT, NONE
+		UP(0), LEFT(1), DOWN(2), RIGHT(3), NONE(4);
+		private byte index;
+		Dir(int index){
+			this.index = (byte)index;
+		}
+		private static Dir[] counterClockwiseArray = {UP,LEFT,DOWN,RIGHT};
+		
+		public Dir rotateCounterClockwise(){
+			return counterClockwiseArray[(this.index + 1) % 4];
+		}
+		public Dir rotateClockwise(){
+			return counterClockwiseArray[(this.index + 3) % 4];
+		}
 	}
 	private static class Corner{
 		public final Vec2i topLeft;
 		public final Vec2i topRight;
 		public final Vec2i bottomLeft;
 		public final Vec2i bottomRight;
+		public final Vec2 center;
 		public Corner(Vec2i topLeft){
-			this.topLeft = topLeft;
-			this.topRight = topLeft.right();
-			this.bottomLeft = topLeft.down();
-			this.bottomRight = bottomLeft.right();
+			this(topLeft, topLeft.right(), topLeft.down(), topLeft.down().right());
 		}
 		private Corner(Vec2i topLeft, Vec2i topRight, Vec2i bottomLeft, Vec2i bottomRight){
 			this.topLeft = topLeft;
 			this.topRight = topRight;
 			this.bottomLeft = bottomLeft;
 			this.bottomRight = bottomRight;
+			this.center = midPoint(topLeft, bottomRight);
 		}
 		public Corner left(){
 			return new Corner(this.topLeft.left(), this.topLeft, this.bottomLeft.left(), this.bottomLeft);
@@ -162,6 +173,16 @@ public class Tracer {
 			return new Corner(this.bottomLeft, this.bottomRight, this.bottomLeft.down(), this.bottomRight.down());
 		}
 		
+		public Corner move(Dir dir){
+			switch(dir){
+				case UP: return up();
+				case DOWN: return down();
+				case LEFT: return left();
+				case RIGHT: return right();
+				default: return this;
+			}
+		}
+		
 		public Dir dirFrom(Corner origin){
 			if(this.topLeft.y > origin.topLeft.y){
 				return Dir.UP;
@@ -171,7 +192,13 @@ public class Tracer {
 				return Dir.RIGHT;
 			} else if(this.topLeft.x < origin.topLeft.x){
 				return Dir.LEFT;
+			} else {
+				return Dir.NONE;
 			}
+		}
+		
+		public Vec2 midpoint(Corner other) {
+			return this.center.add(other.center).mul(0.5);
 		}
 		
 		@Override
@@ -215,124 +242,113 @@ public class Tracer {
 			return this.pos.equals(initialPos);
 		}
 		public void step(){
+			// first, get direction and rotate color checking to match perspective of machine motion
 			var dir = pos.dirFrom(oldPos);
-			int tl_tr_bl_br = 0b0000;
-			if(isColor(pos.topLeft)) tl_tr_bl_br     |= 0b1000;
-			if(isColor(pos.topRight)) tl_tr_bl_br    |= 0b0100;
-			if(isColor(pos.bottomLeft)) tl_tr_bl_br  |= 0b0010;
-			if(isColor(pos.bottomRight)) tl_tr_bl_br |= 0b0001;
-			switch(tl_tr_bl_br){
-				case 0b1000:
-					// #.
-					// ..
-				case 0b1010:
-					// #.
-					// #.
-				case 0b1011:
-					// #.
-					// ##
-					midpoints.add(midPoint(pos.topLeft, pos.topRight));
-					pos = pos.up();
+			var turn = Dir.NONE;
+			int perspective_nl_nr_fl_fr = 0b0000;
+			boolean nl = false, nr = false, fl = false, fr = false;
+			switch(dir){
+				case UP:{
+					nl = isColor(pos.bottomLeft);
+					nr = isColor(pos.bottomRight);
+					fl = isColor(pos.topLeft);
+					fr = isColor(pos.topRight);
 					break;
-				case 0b0001:
+				}
+				case DOWN:{
+					nl = isColor(pos.topRight);
+					nr = isColor(pos.topLeft);
+					fl = isColor(pos.bottomRight);
+					fr = isColor(pos.bottomLeft);
+					break;
+				}
+				case LEFT:{
+					nl = isColor(pos.bottomRight);
+					nr = isColor(pos.topRight);
+					fl = isColor(pos.bottomLeft);
+					fr = isColor(pos.topLeft);
+					break;
+				}
+				case RIGHT:{
+					nl = isColor(pos.topLeft);
+					nr = isColor(pos.bottomLeft);
+					fl = isColor(pos.topRight);
+					fr = isColor(pos.bottomRight);
+					break;
+				}
+				default:
+					throw new IllegalStateException("Machine old and current position equal, cannot move");
+			}
+			if(nl) perspective_nl_nr_fl_fr |= 0b1000;
+			if(nr) perspective_nl_nr_fl_fr |= 0b0100;
+			if(fl) perspective_nl_nr_fl_fr |= 0b0010;
+			if(fr) perspective_nl_nr_fl_fr |= 0b0001;
+			// then decide whether to turn or keep going in same direction
+			switch(perspective_nl_nr_fl_fr){
+				case 0b1000:
 					// ..
-					// .#
-				case 0b0101:
-					// .#
-					// .#
-				case 0b1101:
+					// #.
+					// ^^
+				case 0b0111:
 					// ##
 					// .#
-					midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
-					pos = pos.down();
+					// ^^
+				case 0b1001:
+					// .#
+					// #.
+					// ^^
+				case 0b1100:
+					// ..
+					// ##
+					// ^^
+					turn = Dir.LEFT;
 					break;
 				case 0b0100:
+					// ..
 					// .#
-					// ..
-				case 0b1100:
-					// ##
-					// ..
-				case 0b1110:
+					// ^^
+				case 0b1011:
 					// ##
 					// #.
-					midpoints.add(midPoint(pos.topRight, pos.bottomRight));
-					pos = pos.right();
-					break;
-				case 0b0010:
-					// ..
-					// #.
-				case 0b0011:
-					// ..
-					// ##
-				case 0b0111:
-					// .#
-					// ##
-					midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
-					pos = pos.left();
-					break;
-				case 0b1001:
-					// #.
-					// .#
-					// uh-oh! turn from previous direction
-					if(pos.isBelow(oldPos)){
-						// from top
-						midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
-						pos = pos.left();
-					} else if(pos.isAbove(oldPos)){
-						// from below
-						midpoints.add(midPoint(pos.topRight, pos.bottomRight));
-						pos = pos.right();
-					} else if(pos.isLeftOf(oldPos)){
-						// from right
-						midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
-						pos = pos.down();
-					} else if(pos.isRightOf(oldPos)){
-						// from left
-						midpoints.add(midPoint(pos.topLeft, pos.topRight));
-						pos = pos.up();
-					} else {
-						throw new IllegalStateException("Machine old and current position equal, cannot move");
-					}
-					break;
+					// ^^
 				case 0b0110:
-					// .#
 					// #.
-					// uh-oh! turn from previous direction
-					if(pos.isBelow(oldPos)){
-						// from top
-						midpoints.add(midPoint(pos.topRight, pos.bottomRight));
-						pos = pos.right();
-					} else if(pos.isAbove(oldPos)){
-						// from below
-						midpoints.add(midPoint(pos.topLeft, pos.bottomLeft));
-						pos = pos.left();
-					} else if(pos.isLeftOf(oldPos)){
-						// from right
-						midpoints.add(midPoint(pos.topLeft, pos.topRight));
-						pos = pos.up();
-					} else if(pos.isRightOf(oldPos)){
-						// from left
-						midpoints.add(midPoint(pos.bottomLeft, pos.bottomRight));
-						pos = pos.down();
-					} else {
-						throw new IllegalStateException("Machine old and current position equal, cannot move");
-					}
+					// .#
+					// ^^
+				case 0b0011:
+					// ##
+					// ..
+					// ^^
+					turn = Dir.RIGHT;
 					break;
-				case 0b0000:
-					// ..
-					// ..
-					// error state, should not occur
-					throw new IllegalStateException("Not on corner, all four are off-color");
 				case 0b1111:
 					// ##
 					// ##
-					// error state, should not occur
+					// ^^
 					throw new IllegalStateException("Not on corner, all four are color");
-				default:
-					throw new IllegalStateException("Unknown case: 0b"+Integer.toBinaryString(tl_tr_bl_br));
+				case 0b0000:
+					// ..
+					// ..
+					// ^^
+					throw new IllegalStateException("Not on corner, all four are off-color");
 			}
-			System.out.println(oldPos.topLeft + " -> " + pos.topLeft + "\t0b"+Integer.toBinaryString(tl_tr_bl_br)); // TODO: remove
+			Corner newPos;
+			if(turn == Dir.NONE){
+				// keep going straight
+				newPos = pos.move(dir);
+			} else if( turn == Dir.LEFT){
+				// turn left, aka counter-clockwise
+				newPos = pos.move(dir.rotateCounterClockwise());
+			} else {
+				// turn right, aka clockwise
+				newPos = pos.move(dir.rotateClockwise());
+			}
+			// now add edge point from step
+			midpoints.add(pos.midpoint(newPos));
+			// finally, update the position
+			System.out.println(oldPos.topLeft + " -> " + pos.topLeft + " ("+ dir +")" + "\t0b"+Integer.toBinaryString(perspective_nl_nr_fl_fr)); // TODO: remove
 			oldPos = pos;
+			pos = newPos;
 		}
 	}
 	public List<Vec2> followEdge(final IntMap source, final int x, final int y){ // TODO: make private
