@@ -199,6 +199,33 @@ public class Tracer {
 		}
 		public void step(){
 			var oldPos = pos;
+			
+			int tl_tr_bl_br = 0b0000;
+			if(isColor(pos.topLeft)) tl_tr_bl_br     |= 0b1000;
+			if(isColor(pos.topRight)) tl_tr_bl_br    |= 0b0100;
+			if(isColor(pos.bottomLeft)) tl_tr_bl_br  |= 0b0010;
+			if(isColor(pos.bottomRight)) tl_tr_bl_br |= 0b0001;
+			switch(tl_tr_bl_br){
+				case 0b1000:
+					// #.
+					// ..
+				case 0b1010:
+					// #.
+					// #.
+				case 0b1011:
+					// #.
+					// ##
+					midpoints.add(midPoint(pos.topLeft, pos.topRight));
+					pos = pos.up();
+					break;
+				case 0b0100:
+					// .#
+					// ..
+				case 0b0100:
+					// .#
+					// ..
+					
+			}
 			if(isColor(pos.bottomLeft)){
 				// ??
 				// #?
