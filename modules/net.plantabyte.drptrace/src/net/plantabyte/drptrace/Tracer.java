@@ -265,7 +265,7 @@ public class Tracer {
 			
 		}
 	}
-	public List<Vec2> followEdge(final IntMap source, final int x, final int y){
+	public List<Vec2> followEdge(final IntMap source, final int x, final int y){ // TODO: make private
 		// trace counter-clockwise around the edge
 		final int color = source.get(x,y);
 		final var pointPath = new LinkedList<Vec2>();
@@ -280,7 +280,6 @@ public class Tracer {
 			m.step();
 		}while(!m.done());
 		
-		// TODO: test this function
 		return new ArrayList<>(pointPath); // convert to array list for better performance downstream
 	}
 	private static void floodFill(final IntMap source, final ZOrderBinaryMap searchedMap, final int x, final int y){
