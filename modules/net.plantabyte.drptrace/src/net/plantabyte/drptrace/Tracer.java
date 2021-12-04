@@ -28,7 +28,7 @@ public class Tracer {
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
 	 * invalid
 	 */
-	public BezierSeries traceClosedPath(Vec2[] pathPoints, int smoothness)
+	public BezierShape traceClosedPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
 		if(pathPoints.length < 3){
 			throw new IllegalArgumentException("Must have at least 3 points to trace closed path");
@@ -39,7 +39,7 @@ public class Tracer {
 		final int numPoints = pathPoints.length;
 		final int numBeziers = Math.max(numPoints / smoothness, 2);
 		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
-		var beziers = new BezierSeries(numBeziers);
+		var beziers = new BezierShape(numBeziers);
 		
 		int start = 0;
 		for(int c = 0; c < numBeziers && start < numPoints; c++){
@@ -59,6 +59,7 @@ public class Tracer {
 			}
 			start = end;
 		}
+		beziers.setClosed(true);
 		return beziers;
 	}
 	
@@ -77,7 +78,7 @@ public class Tracer {
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
 	 * invalid
 	 */
-	public BezierSeries traceOpenPath(Vec2[] pathPoints, int smoothness)
+	public BezierShape traceOpenPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
 		if(pathPoints.length < 2){
 			throw new IllegalArgumentException("Must have at least 2 points to trace open path");
@@ -88,7 +89,7 @@ public class Tracer {
 		final int numPoints = pathPoints.length;
 		final int numBeziers = Math.max(numPoints / smoothness, 1);
 		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
-		var beziers = new BezierSeries(numBeziers);
+		var beziers = new BezierShape(numBeziers);
 		
 		int start = 0;
 		for(int c = 0; c < numBeziers && start < numPoints; c++){
@@ -108,13 +109,14 @@ public class Tracer {
 			}
 			start = end;
 		}
+		beziers.setClosed(false);
 		return beziers;
 	}
 	
-	public Map<Integer, List<BezierSeries>> traceAllShapes(final IntMap bitmap, final int smoothness) {
+	public List<BezierShape> traceAllShapes(final IntMap bitmap, final int smoothness) {
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
 		var searchedMap = new ZOrderBinaryMap(w, h);
-		Map<Integer, List<BezierSeries>> output = new HashMap<>();
+		var output = new LinkedList<BezierShape>();
 		// algorithm: flood fill each patch, and for
 		// each flood fill, trace the outer edge
 		for(int y = 0; y < h; y++){
@@ -125,8 +127,9 @@ public class Tracer {
 					// next, trace the outer perimeter of the color patch
 					var circumference = followEdge(bitmap, x, y);
 					var vectorized = traceClosedPath(circumference, smoothness);
-					output.computeIfAbsent(color, (Integer k)-> new LinkedList<>());
-					output.get(color).add(vectorized);
+					vectorized.setColor(color);
+					vectorized.setClosed(true);
+					output.add(vectorized);
 					// finally, flood-fill the patch in the searched map
 					floodFill(bitmap, searchedMap, x, y);
 					searchedMap.set(x, y, (byte)1);

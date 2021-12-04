@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.geometry;
 
-public class ZOrderIntMap extends IntMap{
+public final class ZOrderIntMap extends IntMap{
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide
@@ -12,6 +12,17 @@ public class ZOrderIntMap extends IntMap{
 		this.chunksPerRow = ((width >> 4) + 1);
 		final int size = 256 * chunksPerRow * ((height >> 4) + 1);
 		this.data = new int[size];
+	}
+	
+	public static ZOrderIntMap fromMatrix(int[][] rowColMatrix){
+		final int w=rowColMatrix[0].length, h=rowColMatrix.length;
+		var out = new ZOrderIntMap(w, h);
+		for(int y = 0; y < h; y++){
+			for(int x = 0; x < w; x++){
+				out.set(x, y, rowColMatrix[y][x]);
+			}
+		}
+		return out;
 	}
 	
 	private static int zorder4bito8bit(final int x, final int y){

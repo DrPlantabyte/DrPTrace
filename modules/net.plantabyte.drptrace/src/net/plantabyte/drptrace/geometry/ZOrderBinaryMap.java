@@ -2,7 +2,7 @@ package net.plantabyte.drptrace.geometry;
 
 import java.util.Arrays;
 
-public class ZOrderBinaryMap extends IntMap {
+public final class ZOrderBinaryMap extends IntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow;

@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.geometry;
 
-public class ZOrderByteMap extends IntMap{
+public final class ZOrderByteMap extends IntMap{
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide

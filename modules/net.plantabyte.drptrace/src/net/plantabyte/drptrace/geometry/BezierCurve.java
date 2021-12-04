@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-public class BezierCurve {
+public final class BezierCurve {
 	private Vec2[] p = new Vec2[4];
 	
 	/**

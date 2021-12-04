@@ -5,3 +5,4 @@ out\run/*
 dependencies\maven/*
 .idea/*
 modules/*/*.iml
+out.svg

@@ -3,14 +3,19 @@ package net.plantabyte.drptrace.testing;
 import net.plantabyte.drptrace.Tracer;
 import net.plantabyte.drptrace.geometry.BezierCurve;
 import net.plantabyte.drptrace.geometry.Vec2;
-import net.plantabyte.drptrace.utils.BezierPlotter;
-import net.plantabyte.drptrace.utils.BufferedImageIntMap;
+import net.plantabyte.drptrace.utils.*;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +30,49 @@ public class Main {
 //		test1();
 //		test2();
 //		test3();
-		test4();
+//		test4();
+		test5();
 		System.exit(0);
 	}
 	
+	private static void test5() {
+		print("Test 5");
+		final int smoothness = 10;
+		final int maxColors = 64;
+		JFileChooser jfc = new JFileChooser();
+		jfc.setDialogTitle("Select an image");
+		jfc.setFileFilter(new FileFilter() {
+			@Override
+			public boolean accept(final File f) {
+				String n = f.getName().toLowerCase();
+				return f.isDirectory() || n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".gif");
+			}
+			
+			@Override
+			public String getDescription() {
+				return "Images (.png, .jpg, .gif)";
+			}
+		});
+		if(jfc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
+			var f = jfc.getSelectedFile();
+			System.out.println("Tracing image "+f.toString()+"...");
+			try {
+				var bimg = ImageIO.read(f);
+				var bezierShapes =
+						ImageTracer.traceBufferedImage(bimg, smoothness,
+								maxColors
+						);
+				SVGWriter.writeToSVG(bezierShapes, bimg.getWidth(), bimg.getHeight(),
+						Files.newOutputStream(Paths.get("out.svg")));
+			} catch(IOException | SVGWriter.SVGWriterException e) {
+				e.printStackTrace(System.err);
+				System.out.println("...operation failed. Abort.");
+				System.exit(1);
+			}
+			System.out.println("...Done");
+			System.exit(0);
+		}
+	}
 	private static void test4() {
 		print("Test 4");
 		int h = 100, w = 200;
@@ -61,17 +105,14 @@ public class Main {
 		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg), smoothness);
 		long t1 = System.currentTimeMillis();
 		System.out.printf("Tracing took %s ms\n", (t1-t0));
-		for(var e : results.entrySet()){
-			int color = e.getKey();
-			var traces = e.getValue();
-			System.out.printf("Color %H: %s path(s)\n", color, traces.size());
+		for(var e : results){
+			int color = e.getColor();
+			var trace = e;
 			
 			brush.setColor(Color.RED);
-			for(var trace : traces){
-				for(var bezier : trace){
-//					BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
-					BezierPlotter.drawBezier(bezier, brush);
-				}
+			for(var bezier : trace){
+//				BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
+				BezierPlotter.drawBezier(bezier, brush);
 			}
 		}
 		showImg(bimg, 4);
