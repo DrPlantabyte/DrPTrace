@@ -1,10 +1,9 @@
-package imagemagick;
 /*
  * @(#)Quantize.java    0.90 9/19/00 Adam Doppelt
  * Downloaded on 2021-12-04 from
  * http://www.java2s.com/Code/Java/2D-Graphics-GUI/Anefficientcolorquantizationalgorithm.htm
  */
-
+package imagemagick;
 
 /**
  * An efficient color quantization algorithm, adapted from the C++
