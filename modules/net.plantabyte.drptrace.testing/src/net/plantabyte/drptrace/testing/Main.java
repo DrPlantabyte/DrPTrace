@@ -33,8 +33,8 @@ public class Main {
 //		test2();
 //		test3();
 //		test4();
-//		test5();
-		test6();
+		test5();
+//		test6();
 		System.exit(0);
 	}
 	
@@ -42,7 +42,7 @@ public class Main {
 		print("Test 6");
 		// initialize raster with red target pattern
 		int w = 200, h = 100;
-		int pixelsPerNode = 10;
+		int pixelsPerNode = 5;
 		ZOrderIntMap raster = new ZOrderIntMap(w, h);
 		for(int y = 0; y < h; y++){
 			for(int x = 0; x < w; x++){
