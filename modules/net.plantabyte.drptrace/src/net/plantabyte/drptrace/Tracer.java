@@ -130,7 +130,6 @@ public class Tracer {
 					// finally, flood-fill the patch in the searched map
 					floodFill(bitmap, searchedMap, x, y);
 					searchedMap.set(x, y, (byte)1);
-					System.out.printf("(%s, %s)\n%s\n", x, y, searchedMap.toString()); // TODO: remove
 				}
 			}
 		}
@@ -141,13 +140,7 @@ public class Tracer {
 		// trace counter-clockwise around the edge
 		final int color = source.get(x,y);
 		final var pointPath = new LinkedList<Vec2>();
-		// first move up to top edge
-		int x2 = x, y2 = y;
-		do{
-			y2++;
-		} while(source.isInRange(x2, y2) && source.get(x2,y2) == color);
-		// now follow edges around in counter-clockwise direction
-		TraceMachine m = new TraceMachine(source, new Vec2i(x2, y2), color, pointPath);
+		TraceMachine m = new TraceMachine(source, new Vec2i(x, y), color, pointPath);
 		do{
 			m.step();
 		}while(!m.done());

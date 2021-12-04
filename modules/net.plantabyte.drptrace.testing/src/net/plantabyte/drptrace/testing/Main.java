@@ -71,9 +71,7 @@ public class Main {
 				for(var bezier : trace){
 //					BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
 					BezierPlotter.drawBezier(bezier, brush);
-					print(bezier);
 				}
-//				showImg(bimg, 4);
 			}
 		}
 		showImg(bimg, 4);
