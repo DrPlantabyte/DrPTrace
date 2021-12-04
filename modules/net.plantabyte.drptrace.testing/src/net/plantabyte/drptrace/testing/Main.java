@@ -1,8 +1,8 @@
 package net.plantabyte.drptrace.testing;
 
 import net.plantabyte.drptrace.Tracer;
-import net.plantabyte.drptrace.geometry.BezierCurve;
-import net.plantabyte.drptrace.geometry.Vec2;
+import net.plantabyte.drptrace.geometry.*;
+import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
 import net.plantabyte.drptrace.utils.*;
 
 import javax.imageio.ImageIO;
@@ -12,8 +12,10 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -31,10 +33,49 @@ public class Main {
 //		test2();
 //		test3();
 //		test4();
-		test5();
+//		test5();
+		test6();
 		System.exit(0);
 	}
 	
+	private static void test6() {
+		print("Test 6");
+		// initialize raster with red target pattern
+		int w = 200, h = 100;
+		int pixelsPerNode = 10;
+		ZOrderIntMap raster = new ZOrderIntMap(w, h);
+		for(int y = 0; y < h; y++){
+			for(int x = 0; x < w; x++){
+				double r = Math.sqrt(Math.pow(x-w/2, 2) + Math.pow(y-h/2, 2));
+				if(r < 10 || (r > 20 && r < 30)){
+					raster.set(x, y, Color.RED.getRGB());
+				} else {
+					raster.set(x, y, Color.WHITE.getRGB());
+				}
+			}
+		}
+		// trace the raster to vector shapes
+		Tracer tracer = new Tracer();
+		final List<BezierShape> bezierShapes =
+				tracer.traceAllShapes(raster, pixelsPerNode);
+		// write to SVG file
+		try(BufferedWriter out = Files.newBufferedWriter(
+				Paths.get("out.svg"), StandardCharsets.UTF_8)
+		){
+			out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+			out.write(String.format("<svg width=\"%s\" height=\"%s\" id=\"svgroot\" version=\"1.1\" viewBox=\"0 0 %s %s\" xmlns=\"http://www.w3.org/2000/svg\">", w, h, w, h));
+			for(BezierShape shape : bezierShapes) {
+				Color c = new Color(shape.getColor());
+				String hexColor = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+				out.write(String.format(
+						"<path style=\"fill:%s;stroke:%s;stroke-width:1;stroke-opacity:1\" d=\"%s\" />",
+						hexColor, hexColor, shape.toSVGPathString()));
+			}
+			out.write("</svg>");
+		} catch(IOException e){
+			e.printStackTrace(System.err);
+		}
+	}
 	private static void test5() {
 		print("Test 5");
 		final int smoothness = 20;

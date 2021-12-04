@@ -1,5 +1,8 @@
 package net.plantabyte.drptrace.geometry;
 
+/**
+ * Immutagble 2D point data class
+ */
 public final class Vec2 {
 	/** X value */
 	public final double x;
@@ -18,6 +21,10 @@ public final class Vec2 {
 	/** origin point */
 	public static final Vec2 ORIGIN = new Vec2(0,0);
 	
+	/**
+	 * Creates a string representation of the coordinates
+	 * @return the coordinates as a sctring
+	 */
 	@Override public String toString(){
 		return String.format("(%f, %f)", x, y);
 	}

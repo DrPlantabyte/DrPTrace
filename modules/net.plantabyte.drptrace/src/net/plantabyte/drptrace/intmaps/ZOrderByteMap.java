@@ -1,11 +1,23 @@
-package net.plantabyte.drptrace.geometry;
+package net.plantabyte.drptrace.intmaps;
 
-public final class ZOrderByteMap extends IntMap{
+import net.plantabyte.drptrace.IntMap;
+
+/**
+ * For 256-color raster images, this <code>IntMap</code> class wil provide the
+ * best performance and memory usage.
+ */
+public final class ZOrderByteMap extends IntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide
 	private final byte[] data;
 	
+	/**
+	 * Constructs a new instance with the given width and height. All values start
+	 * as zero.
+	 * @param width width of the raster
+	 * @param height height of the raster
+	 */
 	public ZOrderByteMap(int width, int height){
 		this.width = width;
 		this.height = height;
@@ -43,6 +55,14 @@ public final class ZOrderByteMap extends IntMap{
 	}
 	
 	
+	/**
+	 * Get the value at the given (X,Y) coordinate.
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @return A byte value as an <code>int</code>
+	 * @throws ArrayIndexOutOfBoundsException thrown if (X,Y) is outside the
+	 * bounds of this <code>IntMap</code>
+	 */
 	@Override
 	public int get(final int x, final int y)
 			throws ArrayIndexOutOfBoundsException {
@@ -50,6 +70,15 @@ public final class ZOrderByteMap extends IntMap{
 		return data[i];
 	}
 	
+	/**
+	 * Sets the value at a given coordinate to the specified value.
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @param value value to store at (X,Y)
+	 * @return Returns the previous value that was overwritten.
+	 * @throws ArrayIndexOutOfBoundsException Thrown if coordinate (X,Y) is out
+	 * of bounds
+	 */
 	public int set(final int x, final int y, final byte value)
 			throws ArrayIndexOutOfBoundsException {
 		final int i = index(x, y);
@@ -58,16 +87,28 @@ public final class ZOrderByteMap extends IntMap{
 		return t;
 	}
 	
+	/**
+	 * Gets the width of this <code>IntMap</code>
+	 * @return The width of this <code>IntMap</code>
+	 */
 	@Override
 	public int getWidth() {
 		return this.width;
 	}
 	
+	/**
+	 * Gets the height of this <code>IntMap</code>
+	 * @return The height of this <code>IntMap</code>
+	 */
 	@Override
 	public int getHeight() {
 		return this.height;
 	}
 	
+	/**
+	 * Creates a deep-copy clone
+	 * @return A new <code>IntMap</code> with identical data to this one.
+	 */
 	@Override
 	public ZOrderByteMap clone() {
 		var b = new ZOrderByteMap(getWidth(), getHeight());

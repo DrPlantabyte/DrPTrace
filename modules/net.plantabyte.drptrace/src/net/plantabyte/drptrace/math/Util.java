@@ -2,8 +2,18 @@ package net.plantabyte.drptrace.math;
 
 import net.plantabyte.drptrace.geometry.Vec2;
 
+/**
+ * A collection of useful math functions, collected here as static methods.
+ */
 public class Util {
-	
+	/**
+	 * Calculates the closest distance between a point and a line segment (defined
+	 * by two points)
+	 * @param L1 One end of the line segment
+	 * @param L2 Other end of the line segment
+	 * @param p The point to measure the distance from
+	 * @return closest distance between the point and the line segment
+	 */
 	public static double distFromPointToLineSegment(Vec2 L1, Vec2 L2, Vec2 p){
 		// vector AB
 		Vec2 AB = new Vec2(

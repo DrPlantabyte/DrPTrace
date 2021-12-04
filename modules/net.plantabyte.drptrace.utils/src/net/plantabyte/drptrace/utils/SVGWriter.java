@@ -1,9 +1,10 @@
 package net.plantabyte.drptrace.utils;
 
 import net.plantabyte.drptrace.geometry.BezierShape;
-import net.plantabyte.drptrace.geometry.Vec2;
 
-import javax.xml.parsers.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
@@ -67,27 +68,7 @@ public class SVGWriter {
 	}
 	
 	private static String svgPathString(final BezierShape s) {
-		Vec2 start = null;
-		var sb = new StringBuilder();
-		for(var p : s){
-			if(!p.getP1().equals(start)){
-				// gap in path
-				sb.append(String.format("M %f %f", p.getP1().x, p.getP1().y));
-			}
-			if(p.getP1().equals(p.getP2()) && p.getP4().equals(p.getP3())){
-				// is a straight line
-				sb.append(String.format(" L %f %f ", p.getP4().x, p.getP4().y));
-			} else {
-				// cubic spline
-				sb.append(String.format(" C %f,%f %f,%f %f,%f",
-						p.getP2().x, p.getP2().y,
-						p.getP3().x, p.getP3().y,
-						p.getP4().x, p.getP4().y));
-			}
-			start = p.getP4();
-		}
-		if(s.isClosed()) sb.append(" Z");
-		return sb.toString();
+		return s.toSVGPathString();
 	}
 	
 	private static String intToHexColor(int argb){

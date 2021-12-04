@@ -1,11 +1,15 @@
 package net.plantabyte.drptrace.trace;
 
-import net.plantabyte.drptrace.geometry.IntMap;
+import net.plantabyte.drptrace.IntMap;
 import net.plantabyte.drptrace.geometry.Vec2;
 import net.plantabyte.drptrace.geometry.Vec2i;
 
 import java.util.List;
 
+/**
+ * This is the tracing state machine responsible for converting raster shapes into
+ * point paths, which can then be used to fit bezier curves
+ */
 public class TraceMachine{
 	private final IntMap src;
 	private Corner pos;
@@ -13,9 +17,18 @@ public class TraceMachine{
 	private Corner oldPos;
 	private final int color;
 	private final List<Vec2> midpoints;
-	public TraceMachine(IntMap source, Vec2i topLeft, int color, List<Vec2> pointTacker){
+	
+	/**
+	 * <code>TraceMachine</code> standard constructor to trace a shape starting
+	 * at an edge point
+	 * @param source IntMap holding the raster data
+	 * @param startPoint Where to start tracing from
+	 * @param color The "color" we are tracing (the target value in the IntMap)
+	 * @param pointTacker List to which traced points will be appended
+	 */
+	public TraceMachine(IntMap source, Vec2i startPoint, int color, List<Vec2> pointTacker){
 		this.src = source;
-		this.pos = new Corner(topLeft);
+		this.pos = new Corner(startPoint);
 		this.initialPos = pos;
 		this.oldPos = pos.down();
 		this.color = color;
@@ -24,9 +37,20 @@ public class TraceMachine{
 	private boolean isColor(Vec2i p){
 		return src.isInRange(p.x, p.y) && src.get(p.x, p.y) == color;
 	}
+	
+	/**
+	 * Check if done tracing
+	 * @return returns <code>true</code> if the state machine's position has
+	 * returned to the starting position
+	 */
 	public boolean done(){
 		return this.pos.equals(initialPos);
 	}
+	
+	/**
+	 * Iterate the state machine once to take a single tracing step around the
+	 * shape.
+	 */
 	public void step(){
 		// first, get direction and rotate color checking to match perspective of machine motion
 		var dir = pos.dirFrom(oldPos);

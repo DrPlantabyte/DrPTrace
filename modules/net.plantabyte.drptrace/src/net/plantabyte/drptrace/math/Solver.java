@@ -2,6 +2,9 @@ package net.plantabyte.drptrace.math;
 
 import java.util.function.Function;
 
+/**
+ * A generic function parameter optimizer class.
+ */
 public abstract class Solver {
 	/**
 	 * Optimizes the provided parameter array to maximize the output of the provided function

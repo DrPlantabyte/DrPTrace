@@ -3,6 +3,10 @@ package net.plantabyte.drptrace.math;
 import java.util.Arrays;
 import java.util.function.Function;
 
+/**
+ * The Hill-Climb parameter optimization algorithm is the classic brute-force
+ * solver. It is extremely robust, but is usually slower than other methods.
+ */
 public class HillClimbSolver extends Solver {
 	private final double precision;
 	private final int iterationLimit;
@@ -26,6 +30,13 @@ public class HillClimbSolver extends Solver {
 		this(precision, 1000000);
 	}
 	
+	/**
+	 * Optimizes the provided parameter array to maximize the output of the provided function
+	 * @param func The scoring function to maximize, which must be able to take
+	 *             <code>initialParams</code> as it's input argument
+	 * @param initialParams Initial parameter values
+	 * @return Optimized parameter values
+	 */
 	@Override
 	public double[] maximize(
 			final Function<double[], Double> func, final double[] initialParams

@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.utils;
 
-import net.plantabyte.drptrace.geometry.IntMap;
+import net.plantabyte.drptrace.IntMap;
 
 import java.awt.image.BufferedImage;
 

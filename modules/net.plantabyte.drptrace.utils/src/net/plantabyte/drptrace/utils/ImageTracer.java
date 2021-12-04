@@ -3,7 +3,7 @@ package net.plantabyte.drptrace.utils;
 import imagemagick.Quantize;
 import net.plantabyte.drptrace.Tracer;
 import net.plantabyte.drptrace.geometry.BezierShape;
-import net.plantabyte.drptrace.geometry.ZOrderIntMap;
+import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
 
 import java.awt.image.BufferedImage;
 import java.util.*;

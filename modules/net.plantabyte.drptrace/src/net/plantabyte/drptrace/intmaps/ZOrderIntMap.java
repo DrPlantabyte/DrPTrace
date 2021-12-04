@@ -1,11 +1,23 @@
-package net.plantabyte.drptrace.geometry;
+package net.plantabyte.drptrace.intmaps;
 
-public final class ZOrderIntMap extends IntMap{
+import net.plantabyte.drptrace.IntMap;
+
+/**
+ * Standard <code>IntMap</code> implementation. It uses Z-Ordering to improve
+ * cache coherence and therefore tracing performance.
+ */
+public final class ZOrderIntMap extends IntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide
 	private final int[] data;
 	
+	/**
+	 * Constructs a new instance with the given width and height. All values start
+	 * as zero.
+	 * @param width width of the raster
+	 * @param height height of the raster
+	 */
 	public ZOrderIntMap(int width, int height){
 		this.width = width;
 		this.height = height;
@@ -14,6 +26,13 @@ public final class ZOrderIntMap extends IntMap{
 		this.data = new int[size];
 	}
 	
+	/**
+	 * Constructs a new instance from the given 2D array, copying the data from
+	 * the provided array. The 2D array is assumed to be in matrix format, so it is
+	 * indexed as <code>rowColMatrix[y][x]</code>
+	 * @param rowColMatrix 2D array in matrix index ordering (that is,
+	 *                     rowColMatrix[row index][column index], aka y-x order)
+	 */
 	public static ZOrderIntMap fromMatrix(int[][] rowColMatrix){
 		final int w=rowColMatrix[0].length, h=rowColMatrix.length;
 		var out = new ZOrderIntMap(w, h);
@@ -54,6 +73,14 @@ public final class ZOrderIntMap extends IntMap{
 	}
 	
 	
+	/**
+	 * Get the value at the given (X,Y) coordinate.
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @return A byte value as an <code>int</code>
+	 * @throws ArrayIndexOutOfBoundsException thrown if (X,Y) is outside the
+	 * bounds of this <code>IntMap</code>
+	 */
 	@Override
 	public int get(final int x, final int y)
 			throws ArrayIndexOutOfBoundsException {
@@ -61,6 +88,15 @@ public final class ZOrderIntMap extends IntMap{
 		return data[i];
 	}
 	
+	/**
+	 * Sets the value at a given coordinate to the specified value.
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @param value value to store at (X,Y)
+	 * @return Returns the previous value that was overwritten.
+	 * @throws ArrayIndexOutOfBoundsException Thrown if coordinate (X,Y) is out
+	 * of bounds
+	 */
 	public int set(final int x, final int y, final int value)
 			throws ArrayIndexOutOfBoundsException {
 		final int i = index(x, y);
@@ -69,16 +105,28 @@ public final class ZOrderIntMap extends IntMap{
 		return t;
 	}
 	
+	/**
+	 * Gets the width of this <code>IntMap</code>
+	 * @return The width of this <code>IntMap</code>
+	 */
 	@Override
 	public int getWidth() {
 		return this.width;
 	}
 	
+	/**
+	 * Gets the height of this <code>IntMap</code>
+	 * @return The height of this <code>IntMap</code>
+	 */
 	@Override
 	public int getHeight() {
 		return this.height;
 	}
 	
+	/**
+	 * Creates a deep-copy clone
+	 * @return A new <code>IntMap</code> with identical data to this one.
+	 */
 	@Override
 	public ZOrderIntMap clone() {
 		var b = new ZOrderIntMap(getWidth(), getHeight());

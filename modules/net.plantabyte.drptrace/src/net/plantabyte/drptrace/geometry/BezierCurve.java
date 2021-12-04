@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * This class represents a single bezier curve
+ */
 public final class BezierCurve {
 	private Vec2[] p = new Vec2[4];
 	
@@ -35,19 +38,42 @@ public final class BezierCurve {
 		p[3] = dest;
 	}
 	
+	/**
+	 * Creates a copy
+	 * @return a deep-copy duplicate of this object
+	 */
 	public BezierCurve clone(){
 		return new BezierCurve(p[0], p[1], p[2], p[3]);
 	}
 	
+	/**
+	 * Gets the first end point
+	 * @return A 2D point
+	 */
 	public Vec2 getP1(){
 		return p[0];
 	}
+	
+	/**
+	 * Gets the first control point
+	 * @return A 2D point
+	 */
 	public Vec2 getP2(){
 		return p[1];
 	}
+	
+	/**
+	 * Gets the second control point
+	 * @return A 2D point
+	 */
 	public Vec2 getP3(){
 		return p[2];
 	}
+	
+	/**
+	 * Gets the second end point
+	 * @return A 2D point
+	 */
 	public Vec2 getP4(){
 		return p[3];
 	}
@@ -85,9 +111,19 @@ public final class BezierCurve {
 		return x*x;
 	}
 	
+	/**
+	 * Adjusts the control points of this instance to fit to the provided point
+	 * path.
+	 * @param pathPoints Series of points outlining the desired path from P1 to P4
+	 */
 	public void fitToPoints(final List<Vec2> pathPoints) {
 		this.fitToPoints(pathPoints.toArray(new Vec2[pathPoints.size()]));
 	}
+	/**
+	 * Adjusts the control points of this instance to fit to the provided point
+	 * path.
+	 * @param pathPoints Series of points outlining the desired path from P1 to P4
+	 */
 	public void fitToPoints(final Vec2[] pathPoints) {
 		if(pathPoints.length == 0){
 			// nothing at all
@@ -162,11 +198,20 @@ public final class BezierCurve {
 		return totalRSE / pathPoints.length;
 	}
 	
+	/**
+	 * Returns debug information
+	 * @return Text useful for debugging
+	 */
 	@Override
 	public String toString() {
-		return String.format("[%s -> %s -> %s -> %s]", p[0], p[1], p[2], p[3]);
+		return String.format("BezierCurve:[%s -> %s -> %s -> %s]", p[0], p[1], p[2], p[3]);
 	}
 	
+	/**
+	 * Checks equality with another object
+	 * @param o other object
+	 * @return True iff <code>o</code> is a BezierCurve with identical points P1-P4.
+	 */
 	@Override
 	public boolean equals(final Object o) {
 		if(this == o) {
@@ -179,6 +224,10 @@ public final class BezierCurve {
 		return Arrays.equals(p, that.p);
 	}
 	
+	/**
+	 * HashCode implementation to go with <code>equals(...)</code>
+	 * @return a hash code
+	 */
 	@Override
 	public int hashCode() {
 		return Arrays.hashCode(p);

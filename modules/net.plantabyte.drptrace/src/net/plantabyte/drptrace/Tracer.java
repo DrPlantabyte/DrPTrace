@@ -1,6 +1,7 @@
 package net.plantabyte.drptrace;
 
 import net.plantabyte.drptrace.geometry.*;
+import net.plantabyte.drptrace.intmaps.ZOrderBinaryMap;
 import net.plantabyte.drptrace.trace.*;
 
 import java.util.*;
@@ -9,7 +10,19 @@ import java.util.*;
  * The Tracer class provides methods for turning a series of points into a
  * sequence of bezier curves tracing that path. If tracing a shape, use
  * <code>traceClosedPath(Vec2[], int)</code>; if tracing a line, use
- * <code>traceOpenPath(Vec2[], int)</code>.
+ * <code>traceOpenPath(Vec2[], int)</code>. For tracing a whole raster image,
+ * use <code>traceAllShapes(IntMap, int)</code>.
+ * <p>
+ * Your tracing process should look like this:<br>
+ * 1. transfer/store your raster data in an <code>IntMap</code><br>
+ * 2. Instantiate a <code>new Tracer()</code><br>
+ * 3. Call <code>Tracer.traceAllShapes(IntMap, int)</code> to trace the raster
+ * to a list of <code>BezierShape</code>s<br>
+ * 4. Read the bezier curves from the <code>BezierShape</code> list<br>
+ * <p>
+ * Note that the "smoothness" parameter is used to adjust the density of bezier
+ * curve nodes, with a higher number resulting in fewer nodes. 10 is usually a
+ * good value to use.
  */
 public class Tracer {
 	/**
@@ -17,12 +30,12 @@ public class Tracer {
 	 * the beginning to form a closed loop. The density of bezier curves is
 	 * controlled by the <code>smoothness</code> score. Specifically, the
 	 * smoothness number is the ratio of provided path points to the number of
-	 * beziers. For example, a smoothness of 5 means that there will be 1 bezier
-	 * for every 5 path points.
+	 * beziers. For example, a smoothness of 10 means that there will be 1 bezier
+	 * for every 10 path points.
 	 * @param pathPoints A series of points to trace with bezier curves. MUST
 	 *                   contain at least 3 points
 	 * @param smoothness Controls the density of beziers (higher number means
-	 *                   fewer bezier curves). MUST be at least 1.
+	 *                   fewer bezier curves). MUST be at least 1 (10 recommended).
 	 * @return Returns a list of <code>BezierCurve</code>s tracing the path of
 	 * the points
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
@@ -67,12 +80,12 @@ public class Tracer {
 	 * Traces a series of points as a sequence of bezier curves. The density of
 	 * bezier curves is controlled by the <code>smoothness</code> score.
 	 * Specifically, the smoothness number is the ratio of provided path points
-	 * beziers. For example, a smoothness of 5 means that there will be 1 bezier
-	 * for every 5 path points.
+	 * beziers. For example, a smoothness of 10 means that there will be 1 bezier
+	 * for every 10 path points.
 	 * @param pathPoints A series of points to trace with bezier curves. MUST
 	 *                   contain at least 2 points
 	 * @param smoothness Controls the density of beziers (higher number means
-	 *                   fewer bezier curves). MUST be at least 1.
+	 *                   fewer bezier curves). MUST be at least 1 (10 recommended).
 	 * @return Returns a list of <code>BezierCurve</code>s tracing the path of
 	 * the points
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
@@ -113,7 +126,24 @@ public class Tracer {
 		return beziers;
 	}
 	
-	public List<BezierShape> traceAllShapes(final IntMap bitmap, final int smoothness) {
+	/**
+	 * Traces every shape (including the background) of the provided raster bitmap.
+	 * The density of bezier curves is controlled by the <code>smoothness</code>
+	 * score. Specifically, the smoothness number is the ratio of provided path
+	 * points beziers. For example, a smoothness of 10 means that there will be 1
+	 * bezier for every 10 path points.
+	 * @param bitmap A 2D array of integer values, such that each contiguous area
+	 *               of a number is considered to be a single shape.
+	 * @param smoothness Controls the density of beziers (higher number means
+	 *                   fewer bezier curves). MUST be at least 1 (10 recommended).
+	 * @return Returns a list of <code>BezierShape</code> objects, each representing
+	 * one shape from the raster. The order is important: the shapes should be drawn
+	 * in the order such that the first index is in the back and the last index is
+	 * in the front.
+	 * @throws IllegalArgumentException Thrown if any of the input arguments are
+	 * invalid
+	 */
+	public List<BezierShape> traceAllShapes(final IntMap bitmap, final int smoothness) throws IllegalArgumentException {
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
 		var searchedMap = new ZOrderBinaryMap(w, h);
 		var output = new LinkedList<BezierShape>();
