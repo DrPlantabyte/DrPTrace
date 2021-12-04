@@ -23,6 +23,10 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace;
 
+import net.plantabyte.drptrace.intmaps.ZOrderBinaryMap;
+import net.plantabyte.drptrace.intmaps.ZOrderByteMap;
+import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
+
 /**
  * The <code>IntMap</code> superclass is the primary data storage structure for
  * DrPTrace. Several high-performance implementations are provided depending on
@@ -39,6 +43,43 @@ package net.plantabyte.drptrace;
  * This class and provided implementations are not thread-safe.
  */
 public abstract class IntMap {
+	/**
+	 * Utility function to create an <code>IntMap</code> from a given matrix.
+	 * @param matrix a square 2D array that is indexed in the order of [row][column]
+	 * @return An <code>IntMap</code> that holds a copy of the given matrix data.
+	 */
+	public static IntMap fromMatrix(int[][] matrix){
+		return ZOrderIntMap.fromMatrix(matrix);
+	}
+	/**
+	 * Utility function to create an <code>IntMap</code> from a given matrix.
+	 * @param matrix a square 2D array that is indexed in the order of [row][column]
+	 * @return An <code>IntMap</code> that holds a copy of the given matrix data.
+	 */
+	public static IntMap fromMatrix(byte[][] matrix){
+		var im = new ZOrderByteMap(matrix[0].length, matrix.length);
+		for(int row = 0; row < matrix.length; row++){
+			for(int col = 0; col < matrix.length; col++){
+				im.set(col, row, matrix[row][col]);
+			}
+		}
+		return im;
+	}
+	/**
+	 * Utility function to create an <code>IntMap</code> from a given matrix.
+	 * @param matrix a square 2D array that is indexed in the order of [row][column]
+	 * @return An <code>IntMap</code> that holds a copy of the given matrix data.
+	 */
+	public static IntMap fromMatrix(boolean[][] matrix){
+		var im = new ZOrderBinaryMap(matrix[0].length, matrix.length);
+		for(int row = 0; row < matrix.length; row++){
+			for(int col = 0; col < matrix.length; col++){
+				im.set(col, row, matrix[row][col] ? (byte)1 : (byte)0);
+			}
+		}
+		return im;
+	}
+	
 	/**
 	 * Get the pixel color/cell value at the given x,y coordinate.
 	 * @param x X coordinate

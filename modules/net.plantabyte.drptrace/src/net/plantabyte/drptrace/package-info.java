@@ -36,8 +36,8 @@ Paths.get("target.svg"), StandardCharsets.UTF_8)
     Color c = new Color(shape.getColor());
     String hexColor = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
     out.write(String.format(
-    "<path style=\"fill:%s;stroke:%s;stroke-width:1;stroke-opacity:1\" d=\"%s\" />",
-    hexColor, hexColor, shape.toSVGPathString()));
+    "<path style=\"fill:%s\" d=\"%s\" />",
+    hexColor, shape.toSVGPathString()));
   }
   out.write("&lt;/svg&gt;");
 } catch(IOException e){

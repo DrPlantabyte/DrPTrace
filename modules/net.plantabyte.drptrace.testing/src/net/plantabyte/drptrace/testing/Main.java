@@ -29,12 +29,12 @@ public class Main {
 		}
 		//
 		
-//		test1();
-//		test2();
-//		test3();
-//		test4();
+		test1();
+		test2();
+		test3();
+		test4();
 		test5();
-//		test6();
+		test6();
 		System.exit(0);
 	}
 	
@@ -68,8 +68,8 @@ public class Main {
 				Color c = new Color(shape.getColor());
 				String hexColor = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
 				out.write(String.format(
-						"<path style=\"fill:%s;stroke:%s;stroke-width:1;stroke-opacity:1\" d=\"%s\" />",
-						hexColor, hexColor, shape.toSVGPathString()));
+						"<path style=\"fill:%s\" d=\"%s\" />",
+						hexColor, shape.toSVGPathString()));
 			}
 			out.write("</svg>");
 		} catch(IOException e){
