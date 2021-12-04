@@ -28,7 +28,7 @@ public class Tracer {
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
 	 * invalid
 	 */
-	public List<BezierCurve> traceClosedPath(Vec2[] pathPoints, int smoothness)
+	public BezierSeries traceClosedPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
 		if(pathPoints.length < 3){
 			throw new IllegalArgumentException("Must have at least 3 points to trace closed path");
@@ -39,7 +39,7 @@ public class Tracer {
 		final int numPoints = pathPoints.length;
 		final int numBeziers = Math.max(numPoints / smoothness, 2);
 		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
-		var beziers = new ArrayList<BezierCurve>(numBeziers);
+		var beziers = new BezierSeries(numBeziers);
 		
 		int start = 0;
 		for(int c = 0; c < numBeziers && start < numPoints; c++){
@@ -77,7 +77,7 @@ public class Tracer {
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
 	 * invalid
 	 */
-	public List<BezierCurve> traceOpenPath(Vec2[] pathPoints, int smoothness)
+	public BezierSeries traceOpenPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
 		if(pathPoints.length < 2){
 			throw new IllegalArgumentException("Must have at least 2 points to trace open path");
@@ -88,7 +88,7 @@ public class Tracer {
 		final int numPoints = pathPoints.length;
 		final int numBeziers = Math.max(numPoints / smoothness, 1);
 		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
-		var beziers = new ArrayList<BezierCurve>(numBeziers);
+		var beziers = new BezierSeries(numBeziers);
 		
 		int start = 0;
 		for(int c = 0; c < numBeziers && start < numPoints; c++){
@@ -111,23 +111,33 @@ public class Tracer {
 		return beziers;
 	}
 	
-	public Collection<List<BezierCurve>> traceAllShapes(final IntMap bitmap, final int smoothness) {
-		// first, find a patch of 1's in the bitmap
+	public Map<Integer, List<BezierSeries>> traceAllShapes(final IntMap bitmap, final int smoothness) {
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
 		var searchedMap = new ZOrderBinaryMap(w, h);
+		Map<Integer, List<BezierSeries>> output = new HashMap<>();
+		// algorithm: flood fill each patch, and for
+		// each flood fill, trace the outer edge
 		for(int y = 0; y < h; y++){
 			for(int x = 0; x < w; x++){
 				if(searchedMap.get(x, y) == 0){ // pixel not yet searched
-					// algorithm: flood fill (both patches of 0's and 1's), and for
-					// each flood fill, trace the outer edge
+					// first, find a patch of color in the bitmap
+					int color = bitmap.get(x, y);
+					// next, trace the outer perimeter of the color patch
+					var circumference = followEdge(bitmap, x, y);
+					var vectorized = traceClosedPath(circumference, smoothness);
+					output.computeIfAbsent(color, (Integer k)-> new LinkedList<>());
+					output.get(color).add(vectorized);
+					// finally, flood-fill the patch in the searched map
+					floodFill(bitmap, searchedMap, x, y);
+					searchedMap.set(x, y, (byte)1);
+					System.out.printf("(%s, %s)\n%s\n", x, y, searchedMap.toString()); // TODO: remove
 				}
-				searchedMap.set(x, y, (byte)1);
 			}
 		}
-		throw new UnsupportedOperationException("WIP");
+		return output;
 	}
 	
-	public List<Vec2> followEdge(final IntMap source, final int x, final int y){ // TODO: make private
+	private Vec2[] followEdge(final IntMap source, final int x, final int y){
 		// trace counter-clockwise around the edge
 		final int color = source.get(x,y);
 		final var pointPath = new LinkedList<Vec2>();
@@ -142,11 +152,23 @@ public class Tracer {
 			m.step();
 		}while(!m.done());
 		
-		return new ArrayList<>(pointPath); // convert to array list for better performance downstream
+		return pointPath.toArray(new Vec2[pointPath.size()]); // convert to array for better performance downstream
 	}
 	private static void floodFill(final IntMap source, final ZOrderBinaryMap searchedMap, final int x, final int y){
 		final int color = source.get(x,y);
-		throw new UnsupportedOperationException("WIP");
+		final var Q = new LinkedList<Vec2i>();
+		Q.push(new Vec2i(x, y));
+		while(Q.size() > 0){
+			var pop = Q.pop();
+			searchedMap.set(pop.x, pop.y, (byte)1);
+			Vec2i[] neighbors = {pop.up(), pop.left(), pop.down(), pop.right()};
+			for(var n : neighbors){
+				if(source.isInRange(n.x, n.y) && source.get(n.x, n.y) == color && searchedMap.get(n.x, n.y) == 0){
+					// n is same color and not yet searched
+					Q.push(n);
+				}
+			}
+		}
 	}
 	
 }

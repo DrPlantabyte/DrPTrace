@@ -51,6 +51,15 @@ public final class Vec2i {
 	}
 	
 	/**
+	 * Subtract Vec2 v from this Vec2
+	 * @param v Vec2 to subtract from this one
+	 * @return Result of subtracting the two vectors
+	 */
+	public Vec2i sub(Vec2i v){
+		return new Vec2i(this.x - v.x, this.y-v.y);
+	}
+	
+	/**
 	 * Returns the squared distance from this Vec2 to v
 	 * @param v other Vec2 point
 	 * @return distance squared

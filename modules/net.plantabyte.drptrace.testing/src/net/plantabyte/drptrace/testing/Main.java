@@ -55,12 +55,26 @@ public class Main {
 		showImg(bimg, 4);
 		//
 		Tracer tracer = new Tracer();
-		var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
-		brush.setColor(Color.GREEN);
-		for(var p : pp){
-			int px = (int)p.x;
-			int py = (int)p.y;
-			brush.fillRect(px-1,py-1,2,2);
+		final int smoothness = 10;
+		//var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
+		long t0 = System.currentTimeMillis();
+		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg), smoothness);
+		long t1 = System.currentTimeMillis();
+		System.out.printf("Tracing took %s ms\n", (t1-t0));
+		for(var e : results.entrySet()){
+			int color = e.getKey();
+			var traces = e.getValue();
+			System.out.printf("Color %H: %s path(s)\n", color, traces.size());
+			
+			brush.setColor(Color.RED);
+			for(var trace : traces){
+				for(var bezier : trace){
+//					BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
+					BezierPlotter.drawBezier(bezier, brush);
+					print(bezier);
+				}
+//				showImg(bimg, 4);
+			}
 		}
 		showImg(bimg, 4);
 	}
@@ -89,7 +103,7 @@ public class Main {
 		var tracer = new Tracer();
 		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]), 7);
 		for(var b : trace){
-			BezierPlotter.drawBezierWithPoints(b, brush, Color.BLUE, Color.RED);
+			BezierPlotter.drawBezierWithControlPoints(b, brush, Color.BLUE, Color.RED);
 		}
 		showImg(bimg, 4);
 	}
@@ -104,7 +118,7 @@ public class Main {
 		painter1.setColor(Color.BLACK);
 		painter1.fillOval(10, 20, 30, 40);
 		var b = new BezierCurve(new Vec2(25, 20), new Vec2(10, 20), new Vec2(10, 60), new Vec2(25,60));
-		BezierPlotter.drawBezierWithPoints(b, painter1, Color.BLUE, Color.RED);
+		BezierPlotter.drawBezierWithControlPoints(b, painter1, Color.BLUE, Color.RED);
 		showImg(bimg1);
 	}
 	
@@ -130,7 +144,7 @@ public class Main {
 		print("fitting...");
 		b.fitToPoints(pathPoints);
 		print("...done fitting");
-		BezierPlotter.drawBezierWithPoints(b,painter2,Color.BLUE, Color.RED);
+		BezierPlotter.drawBezierWithControlPoints(b,painter2,Color.BLUE, Color.RED);
 		showImg(bimg2);
 		System.out.println("...Done");
 	}

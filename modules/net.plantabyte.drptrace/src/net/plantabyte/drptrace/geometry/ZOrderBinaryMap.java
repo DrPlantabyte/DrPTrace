@@ -89,25 +89,37 @@ public class ZOrderBinaryMap extends IntMap {
 		return copy;
 	}
 	
-	@Deprecated public static void main(String[] a){
-		final int w = 100, h = 50;
-		var b = new ZOrderBinaryMap(w, h);
-		for(int y = 0; y < b.getHeight(); y++) {
-			for(int x = 0; x < b.getWidth(); x++) {
-				if(Math.sqrt(x*x+y*y) < 50){
-					b.set(x, y, (byte)1);
-				}
+	@Override
+	public String toString() {
+		var sb = new StringBuilder();
+		for(int y = getHeight()-1; y >= 0; y--){
+			for(int x = 0; x < getWidth(); x++){
+				sb.append(this.get(x,y));
 			}
+			sb.append('\n');
 		}
-		for(int y = 0; y < b.getHeight(); y++) {
-			for(int x = 0; x < b.getWidth(); x++) {
-				if(Math.sqrt(x*x+y*y) < 50){
-					if(b.get(x, y) != 1) throw new RuntimeException("FUCK!");
-				} else {
-					if(b.get(x, y) != 0) throw new RuntimeException("FUCK2!");
-				}
-			}
-		}
-		System.out.println(b);
+		return sb.toString();
 	}
+	
+	//	@Deprecated public static void main(String[] a){
+//		final int w = 100, h = 50;
+//		var b = new ZOrderBinaryMap(w, h);
+//		for(int y = 0; y < b.getHeight(); y++) {
+//			for(int x = 0; x < b.getWidth(); x++) {
+//				if(Math.sqrt(x*x+y*y) < 50){
+//					b.set(x, y, (byte)1);
+//				}
+//			}
+//		}
+//		for(int y = 0; y < b.getHeight(); y++) {
+//			for(int x = 0; x < b.getWidth(); x++) {
+//				if(Math.sqrt(x*x+y*y) < 50){
+//					if(b.get(x, y) != 1) throw new RuntimeException("FUCK!");
+//				} else {
+//					if(b.get(x, y) != 0) throw new RuntimeException("FUCK2!");
+//				}
+//			}
+//		}
+//		System.out.println(b);
+//	}
 }

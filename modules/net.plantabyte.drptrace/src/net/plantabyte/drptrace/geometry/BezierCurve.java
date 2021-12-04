@@ -2,6 +2,7 @@ package net.plantabyte.drptrace.geometry;
 
 import net.plantabyte.drptrace.math.*;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
@@ -97,14 +98,34 @@ public class BezierCurve {
 			p[2] = pathPoints[pathPoints.length-1];
 			return;
 		}
+		// check for straight lines
+		var origin = pathPoints[0];
+		var endPoint = pathPoints[pathPoints.length-1];
+		var line = endPoint.sub(origin);
+		var theta = Math.atan2(line.y, line.x);
+		final double tolerance = 0.03125;
+		boolean isLine = true;
+		for(int i = 1; i < pathPoints.length; i++){
+			var L = pathPoints[i].sub(origin);
+			if(Math.abs(Math.atan2(L.y, L.x) - theta) > tolerance){
+				isLine = false;
+				break;
+			}
+		}
+		if(isLine){
+			p[1] = pathPoints[0];
+			p[2] = pathPoints[pathPoints.length-1];
+			return;
+		}
 		// setup for using a function solver
 		double[] paramArray = {p[1].x, p[1].y, p[2].x, p[2].y};
-		Function<double[], Double> optiFunc = (double[] params) -> -1*RMSE(
+		Function<double[], Double> optiFunc = (double[] params) -> RMSE(
 				new BezierCurve(this.getP1(), new Vec2(params[0], params[1]), new Vec2(params[2], params[3]), this.getP4()),
 				pathPoints
 		);
+				//+ (this.getP1().distSquared(this.getP2()) + this.getP4().distSquared(this.getP3())) / (this.getP1().distSquared(this.getP4())); // add bias against long control handles
 		Solver solver = new HillClimbSolver(0.1, 10000);
-		double[] optimizedArray = solver.maximize(optiFunc, paramArray);
+		double[] optimizedArray = solver.minimize(optiFunc, paramArray);
 		this.p[1] = new Vec2(optimizedArray[0], optimizedArray[1]);
 		this.p[2] = new Vec2(optimizedArray[2], optimizedArray[3]);
 	}
@@ -126,5 +147,27 @@ public class BezierCurve {
 			totalRSE += RSE;
 		}
 		return totalRSE / pathPoints.length;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("[%s -> %s -> %s -> %s]", p[0], p[1], p[2], p[3]);
+	}
+	
+	@Override
+	public boolean equals(final Object o) {
+		if(this == o) {
+			return true;
+		}
+		if(o == null || getClass() != o.getClass()) {
+			return false;
+		}
+		final BezierCurve that = (BezierCurve) o;
+		return Arrays.equals(p, that.p);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(p);
 	}
 }
