@@ -79,6 +79,7 @@ public class TraceMachine{
 		var dir = pos.dirFrom(oldPos);
 		var turn = Dir.NONE;
 		int perspective_nl_nr_fl_fr = 0b0000;
+		final Vec2 offset = new Vec2(0.5, 0.5); // correction factor
 		boolean nl = false, nr = false, fl = false, fr = false;
 		switch(dir){
 			case UP:{
@@ -177,7 +178,7 @@ public class TraceMachine{
 			newPos = pos.move(dir.rotateClockwise());
 		}
 		// now add edge point from step
-		midpoints.add(pos.midpoint(newPos));
+		midpoints.add(pos.midpoint(newPos).add(offset));
 		// finally, update the position
 		oldPos = pos;
 		pos = newPos;
