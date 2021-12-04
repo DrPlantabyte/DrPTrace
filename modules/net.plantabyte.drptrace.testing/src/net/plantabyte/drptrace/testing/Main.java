@@ -37,7 +37,7 @@ public class Main {
 	
 	private static void test5() {
 		print("Test 5");
-		final int smoothness = 10;
+		final int smoothness = 20;
 		final int maxColors = 64;
 		JFileChooser jfc = new JFileChooser();
 		jfc.setDialogTitle("Select an image");

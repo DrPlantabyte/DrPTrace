@@ -133,6 +133,7 @@ public final class BezierCurve {
 		final int k = 16; // tune for balancing performance and accuracy
 		double totalRSE = 0;
 		final Vec2[] bPoints = b.makePoints(k);
+		// RMSE points to bezier
 		for(int i = 0; i < pathPoints.length; i++){
 			var p = pathPoints[i];
 			double RSE = Double.MAX_VALUE;
@@ -141,6 +142,18 @@ public final class BezierCurve {
 			for(int s = 1; s < k; s++){
 				var L1 = bPoints[s-1];
 				var L2 = bPoints[s];
+				double dist = Util.distFromPointToLineSegment(L1, L2, p);
+				if(dist < RSE) {RSE = dist;}
+			}
+			totalRSE += RSE;
+		}
+		// RMSE bezier to points
+		for(int i = 0; i < bPoints.length; i++){
+			var p = bPoints[i];
+			double RSE = Double.MAX_VALUE;
+			for(int s = 1; s < pathPoints.length; s++){
+				var L1 = pathPoints[s-1];
+				var L2 = pathPoints[s];
 				double dist = Util.distFromPointToLineSegment(L1, L2, p);
 				if(dist < RSE) {RSE = dist;}
 			}
