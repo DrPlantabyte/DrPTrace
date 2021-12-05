@@ -165,3 +165,14 @@ public class Main {
 }
 
 ```
+
+## Building DrPTrace
+
+`javac`, `javadoc`, and `jar` arguments are provided in the corresponding *-args.txt files. Thus you can easily build the project with the following java commands in the main project directory:
+
+```bash
+javac @javac-args.txt
+jar @jar-core-args.txt
+jar @jar-utils-args.txt
+javadoc @javadoc-args.txt
+```
