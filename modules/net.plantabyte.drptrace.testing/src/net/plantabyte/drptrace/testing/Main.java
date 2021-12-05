@@ -2,7 +2,7 @@ package net.plantabyte.drptrace.testing;
 
 import net.plantabyte.drptrace.Tracer;
 import net.plantabyte.drptrace.geometry.*;
-import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
+import net.plantabyte.drptrace.intmaps.*;
 import net.plantabyte.drptrace.utils.*;
 
 import javax.imageio.ImageIO;
@@ -111,7 +111,6 @@ public class Main {
 				System.exit(1);
 			}
 			System.out.println("...Done");
-			System.exit(0);
 		}
 	}
 	private static void test4() {
