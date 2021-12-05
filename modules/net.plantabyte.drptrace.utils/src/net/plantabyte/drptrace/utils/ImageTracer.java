@@ -31,7 +31,24 @@ import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
 import java.awt.image.BufferedImage;
 import java.util.*;
 
+/**
+ * Utility class for tracing AWT buffered images
+ */
 public class ImageTracer {
+	/**
+	 * Quantizes the colors of the given buffered image, then vector traces the
+	 * resulting color-reduced image, creating one shape for each patch of color.
+	 * @param img A <code>BufferedImage</code>
+	 * @param smoothness Controls the density of beziers (higher number means
+	 *                   fewer bezier curves). MUST be at least 1 (10 recommended).
+	 * @param numColors Maximum number of colors in the quantized image
+	 * @return Returns a list of <code>BezierShape</code> objects, each representing
+	 * one shape from the raster. The order is important: the shapes should be drawn
+	 * in the order such that the first index is in the back and the last index is
+	 * in the front.
+	 * @throws IllegalArgumentException Thrown if any of the input arguments are
+	 * invalid
+	 */
 	public static List<BezierShape> traceBufferedImage(
 			BufferedImage img, int smoothness, int numColors
 			) {
@@ -52,7 +69,19 @@ public class ImageTracer {
 		Tracer t = new Tracer();
 		return t.traceAllShapes(ZOrderIntMap.fromMatrix(imgMatrix), smoothness);
 	}
-	
+	/**
+	 * Vector traces the given <code>BufferedImage</code>, creating one shape for
+	 * each patch of color.
+	 * @param img A <code>BufferedImage</code>
+	 * @param smoothness Controls the density of beziers (higher number means
+	 *                   fewer bezier curves). MUST be at least 1 (10 recommended).
+	 * @return Returns a list of <code>BezierShape</code> objects, each representing
+	 * one shape from the raster. The order is important: the shapes should be drawn
+	 * in the order such that the first index is in the back and the last index is
+	 * in the front.
+	 * @throws IllegalArgumentException Thrown if any of the input arguments are
+	 * invalid
+	 */
 	public static List<BezierShape> traceBufferedImage(
 			BufferedImage img, int smoothness
 	) {

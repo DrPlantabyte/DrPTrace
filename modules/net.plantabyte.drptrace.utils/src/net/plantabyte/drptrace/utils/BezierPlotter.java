@@ -29,8 +29,18 @@ import net.plantabyte.drptrace.geometry.Vec2;
 import java.awt.*;
 import java.util.Optional;
 
+/**
+ * This class provides utility functions for drawing bezier curves on AWT
+ * buffered images.
+ */
 public class BezierPlotter {
-	
+	/**
+	 * Draws a bezier curve and shows the control points
+	 * @param b A <code>BezierCurve</code> instance
+	 * @param g The graphics context for drawing (eg <code>BufferedImage.createGraphics()</code>)
+	 * @param ptColor Color of control points
+	 * @param lineColor Color of the bezier curve
+	 */
 	public static void drawBezierWithControlPoints(BezierCurve b, Graphics2D g, Color ptColor, Color lineColor){
 		double r = 2;
 		Vec2[] parr = {b.getP1(), b.getP2(), b.getP3(), b.getP4()};
@@ -47,9 +57,23 @@ public class BezierPlotter {
 		drawBezier(b, g, Optional.of(lineColor), Optional.empty());
 	}
 	
+	
+	/**
+	 * Draws a bezier curve
+	 * @param b A <code>BezierCurve</code> instance
+	 * @param g The graphics context for drawing (eg <code>BufferedImage.createGraphics()</code>)
+	 */
 	public static void drawBezier(BezierCurve b, Graphics2D g){
 		drawBezier(b, g, Optional.empty(), Optional.empty());
 	}
+	
+	/**
+	 * Draws a bezier curve
+	 * @param b A <code>BezierCurve</code> instance
+	 * @param g The graphics context for drawing (eg <code>BufferedImage.createGraphics()</code>)
+	 * @param lineColor Color of the bezier curve
+	 * @param stroke Stroke of the bezier curve
+	 */
 	public static void drawBezier(BezierCurve b, Graphics2D g, Optional<Color> lineColor, Optional<Stroke> stroke){
 		Vec2[] parr = {b.getP1(), b.getP2(), b.getP3(), b.getP4()};
 		double sumDist = 0;

@@ -35,13 +35,34 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * This is a utility class to help convert <code>BezierShape</code>s into SVG
+ * image files.
+ */
 public class SVGWriter {
-	
+	/**
+	 * This exception wraps various kinds of exceptions that may be thrown when
+	 * writing an SVG file.
+	 */
 	public static class SVGWriterException extends Exception{
 		public SVGWriterException(String message, Throwable cause){
 			super(message, cause);
 		}
 	}
+	
+	/**
+	 * Converts a list of <code>BezierShape</code> objects (such as would be returned by
+	 * <code>Tracer.traceAllShapes(...)</code>) into SVG XML and writes it to the
+	 * given <code>OutputStream</code>
+	 * @param bezierPaths a list of <code>BezierShape</code> objects
+	 * @param width SVG image width (in pixels)
+	 * @param height SVG image height (in pixels)
+	 * @param out An <code>OutputStream</code> to write to (such as
+	 *            <code>Files.newOutputStream(...)</code> or a
+	 *            <code>ByteArrayOutputStream</code>)
+	 * @throws SVGWriterException Thrown if any of the operations fail, with the
+	 * intitial thrown exception being set as the cause of this excption.
+	 */
 	public static void writeToSVG(List<BezierShape> bezierPaths, final int width, final int height, OutputStream out)
 			throws SVGWriterException {
 		try {
