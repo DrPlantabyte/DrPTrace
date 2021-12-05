@@ -11,6 +11,7 @@ DrPTrace has two JPMS modules: `net.plantabyte.drptrace` and `net.plantabyte.drp
 
 ## How it Works
 DrPTrace starts with a bitmap image (stored as an `IntMap` data class) and then iteratively searched for patches of pixels sharing the same color. For each patch, DrPTrace follows the outer edge and records a coordinate point on each pixel edge. It then divides the point path into several bezier curves and uses a parameter solver to optimize the placement of the control points to fit the point path. 
+
 ![explain1_sm](https://user-images.githubusercontent.com/1922739/144734949-3ccabc1b-dadc-44c7-8067-e286679322a6.png)
 ![explain2_sm](https://user-images.githubusercontent.com/1922739/144734950-cb69f418-503b-4f16-8242-e5b99ab0d3e2.png)
 ![explain3_sm](https://user-images.githubusercontent.com/1922739/144734954-e0e68057-e8a9-49d2-95c7-40f268f87290.png)
