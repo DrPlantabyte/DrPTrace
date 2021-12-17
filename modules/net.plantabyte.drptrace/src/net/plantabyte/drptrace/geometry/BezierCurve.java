@@ -111,7 +111,33 @@ public final class BezierCurve {
 		double y = cube(1-t)*p[0].y + 3*square(1-t)*t*p[1].y + 3*(1-t)*square(t)*p[2].y + cube(t)*p[3].y;
 		return new Vec2(x, y);
 	}
-	
+
+	/**
+	 * Scales this bezier curve by multiplying each point by the given scalar value. This will also translate the
+	 * position of the bezier curve.
+	 * @param scalar A scaling factor
+	 * @return A new scaled bezier curve
+	 */
+	public BezierCurve scale(double scalar){
+		return new BezierCurve(p[0].mul(scalar), p[1].mul(scalar), p[2].mul(scalar), p[3].mul(scalar));
+	}
+
+	/**
+	 * Scales this bezier curve by multiplying each point by the given scalar value, keeping it centered relative to the
+	 * given center point (eg the center of a shape made of multiple bezier curves)
+	 * @param scalar A scaling factor
+	 * @param center The center point around which this bezier should be scaled
+	 * @return A new scaled bezier curve
+	 */
+	public BezierCurve scaleAroundPoint(double scalar, Vec2 center){
+		return new BezierCurve(
+				p[0].sub(center).mul(scalar).add(center),
+				p[1].sub(center).mul(scalar).add(center),
+				p[2].sub(center).mul(scalar).add(center),
+				p[3].sub(center).mul(scalar).add(center)
+		);
+	}
+
 	/**
 	 * Generates a series of points along the bezier curve
 	 * @param numPoints Number of points to create (min 2)

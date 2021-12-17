@@ -1,1 +1,1 @@
---create --file out/net.plantabyte.drptrace-1.0.0.jar --module-version 1.0.0 -C out/compile/net.plantabyte.drptrace .
+--create --file out/net.plantabyte.drptrace-1.1.0.jar --module-version 1.1.0 -C out/compile/net.plantabyte.drptrace .
