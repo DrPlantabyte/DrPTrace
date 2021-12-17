@@ -1,7 +1,7 @@
 # DrPTrace
 A bitmap image vector tracing library for Java!
 
-![explain_sm](https://user-images.githubusercontent.com/1922739/144734948-4645da2c-a602-4728-a148-85e59ba8f619.png)
+![example trace of a smiley face](https://user-images.githubusercontent.com/1922739/146476795-de09bafe-4067-4223-af11-1e251ce34596.png)
 
 
 ## About
