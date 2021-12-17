@@ -146,4 +146,15 @@ public class BezierShape extends ArrayList<BezierCurve> {
 		if(this.isClosed()) sb.append(" Z");
 		return sb.toString();
 	}
+
+	/**
+	 * Scales this shape around the origin point
+	 * @param scalar The scaling value
+	 * @param origin The center point to preserve (use (0,0) as the origin if performing a global scaling operation)
+	 */
+	public void scale(double scalar, Vec2 origin){
+		for(int i = 0; i < this.size(); i++){
+			this.set(i, this.get(i).scaleAroundPoint(scalar, origin));
+		}
+	}
 }

@@ -28,7 +28,9 @@ public class Main {
 			System.out.println(i+": "+args[i]);
 		}
 		//
-		
+		AlgorithmDevelopment.main(args);
+		System.exit(0);
+		//
 		test1();
 		test2();
 		test3();

@@ -7,4 +7,6 @@ exports net.plantabyte.drptrace.testing;
 	requires net.plantabyte.drptrace;
 	requires net.plantabyte.drptrace.utils;
 	requires java.desktop;
+
+	requires com.github.weisj.jsvg;
 }

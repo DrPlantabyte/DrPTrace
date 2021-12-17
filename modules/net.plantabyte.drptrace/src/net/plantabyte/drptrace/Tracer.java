@@ -66,37 +66,7 @@ public class Tracer {
 	 */
 	public BezierShape traceClosedPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
-		if(pathPoints.length < 3){
-			throw new IllegalArgumentException("Must have at least 3 points to trace closed path");
-		}
-		if(smoothness < 1){
-			throw new IllegalArgumentException("Smoothness must be a positive number");
-		}
-		final int numPoints = pathPoints.length;
-		final int numBeziers = Math.max(numPoints / smoothness, 2);
-		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
-		var beziers = new BezierShape(numBeziers);
-		
-		int start = 0;
-		for(int c = 0; c < numBeziers && start < numPoints; c++){
-			int end = Math.min(start + intervalSize, numPoints); // start and end are both inclusive
-			// note: exclude end points from fitting
-			final Vec2[] buffer;
-			if(end - start < 3){
-				beziers.add(new BezierCurve(pathPoints[start], pathPoints[end % numPoints]));
-			} else {
-				buffer = new Vec2[end - start - 2];
-				System.arraycopy(pathPoints, start + 1, buffer, 0, buffer.length);
-				var b = new BezierCurve(pathPoints[start], buffer[0],
-						buffer[buffer.length - 1], pathPoints[end % numPoints]
-				);
-				b.fitToPoints(buffer);
-				beziers.add(b);
-			}
-			start = end;
-		}
-		beziers.setClosed(true);
-		return beziers;
+		return tracePath(pathPoints, smoothness, true);
 	}
 	
 	/**
@@ -116,36 +86,46 @@ public class Tracer {
 	 */
 	public BezierShape traceOpenPath(Vec2[] pathPoints, int smoothness)
 			throws IllegalArgumentException {
-		if(pathPoints.length < 2){
-			throw new IllegalArgumentException("Must have at least 2 points to trace open path");
+		return tracePath(pathPoints, smoothness, false);
+	}
+
+	private BezierShape tracePath(Vec2[] pathPoints, int smoothness, boolean closedLoop)
+			throws IllegalArgumentException{
+		//
+		final int min_beziers = closedLoop ? 2 : 1;
+		final int min_pts = closedLoop ? 3 : 2;
+		final int e_offset = closedLoop ? 0 : -1;
+		if(pathPoints.length < 3){
+			throw new IllegalArgumentException(String.format("Must have at least %s points to trace %s path",
+					min_pts, closedLoop ? "closed" : "open"));
 		}
 		if(smoothness < 1){
 			throw new IllegalArgumentException("Smoothness must be a positive number");
 		}
 		final int numPoints = pathPoints.length;
-		final int numBeziers = Math.max(numPoints / smoothness, 1);
+		final int numBeziers = Math.max(numPoints / smoothness, min_beziers);
 		final int intervalSize = numPoints/numBeziers + 1; // last interval may be a different size
 		var beziers = new BezierShape(numBeziers);
-		
+
 		int start = 0;
 		for(int c = 0; c < numBeziers && start < numPoints; c++){
-			int end = Math.min(start + intervalSize, numPoints-1); // start and end are both inclusive
+			int end = Math.min(start + intervalSize, numPoints + e_offset); // start and end are both inclusive
 			// note: exclude end points from fitting
 			final Vec2[] buffer;
 			if(end - start < 3){
-				beziers.add(new BezierCurve(pathPoints[start], pathPoints[end]));
+				beziers.add(new BezierCurve(pathPoints[start], pathPoints[end % numPoints]));
 			} else {
 				buffer = new Vec2[end - start - 2];
 				System.arraycopy(pathPoints, start + 1, buffer, 0, buffer.length);
 				var b = new BezierCurve(pathPoints[start], buffer[0],
-						buffer[buffer.length - 1], pathPoints[end]
+						buffer[buffer.length - 1], pathPoints[end % numPoints]
 				);
 				b.fitToPoints(buffer);
 				beziers.add(b);
 			}
 			start = end;
 		}
-		beziers.setClosed(false);
+		beziers.setClosed(closedLoop);
 		return beziers;
 	}
 	
