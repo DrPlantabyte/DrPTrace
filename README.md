@@ -10,7 +10,7 @@ DrPTrace is a pure Java library for converting raster arrays (aka bitmap images)
 DrPTrace has two JPMS modules: `net.plantabyte.drptrace` and `net.plantabyte.drptrace.utils`. Only `net.plantabyte.drptrace` is required to use this library and it has no external dependencies (it only requires the `java.base` module). However, if you are working with `BufferedImage` objects or saving SVG XML files, then the utility functions in `net.plantabyte.drptrace.utils` will be very helpful to you (`net.plantabyte.drptrace.utils` depends on `java.xml` and `java.desktop`). 
 
 ## How it Works
-DrPTrace starts with a bitmap image (stored as an `IntMap` data class) and then iteratively searched for patches of pixels sharing the same color. For each patch, DrPTrace follows the outer edge and records a coordinate point on each pixel edge. It then divides the point path into several bezier curves and uses a parameter solver to optimize the placement of the control points to fit the point path. 
+DrPTrace starts with a bitmap image (stored as an `IntMap` data class) and then iteratively searches for patches of pixels sharing the same color. For each patch, DrPTrace follows the outer edge and records a coordinate point on each pixel edge. It then divides the point path into several bezier curves and uses a parameter solver to optimize the placement of the control points to fit the point path. 
 
 ![explain1_sm](https://user-images.githubusercontent.com/1922739/144734949-3ccabc1b-dadc-44c7-8067-e286679322a6.png)
 ![explain2_sm](https://user-images.githubusercontent.com/1922739/144734950-cb69f418-503b-4f16-8242-e5b99ab0d3e2.png)
