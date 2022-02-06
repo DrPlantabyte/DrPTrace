@@ -22,7 +22,7 @@ DrPTrace starts with a bitmap image (stored as an `IntMap` data class) and then 
 
 Using DrPTrace has three steps:
 1. Trasfer your raster data to an `IntMap`
-2. Use `Tracer.traceAllShapes(IntMap, int)` to vectorize the raster
+2. Use `Tracer.traceAllShapes(IntMap, ...)` to vectorize the raster
 3. Convert the resulting `BezierShapes` into whatever format you intend to store the bezier curve vectors (typically SVG XML)
 
 ### Fit a bezier curve to a series of points
@@ -98,7 +98,7 @@ public class Main {
 			}
 		}
 		// trace the raster to vector shapes
-		Tracer tracer = new Tracer();
+		IntervalTracer tracer = new IntervalTracer();
 		final List<BezierShape> bezierShapes =
 				tracer.traceAllShapes(raster, pixelsPerNode);
 		// write to SVG file

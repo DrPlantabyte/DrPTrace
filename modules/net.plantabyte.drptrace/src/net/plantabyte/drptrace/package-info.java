@@ -2,7 +2,7 @@
  * This package contains the main high-level DrPTrace API, with data classes and
  * implementation details stored in sub-packages.
  *
- * Tracing is done with the <code>Tracer</code> class, which requires an <code>IntMap</code> representing
+ * Tracing is done with a Tracer class, such as <code>IntervalTracer</code> class, which requires an <code>IntMap</code> representing
  * the raster image you wish to trace. The <code>net.plantabyte.drptrace.utils</code>
  * module provides convenience utilities to further simplify usage.
  *
@@ -23,7 +23,7 @@ for(int y = 0; y < h; y++){
   }
 }
 // trace the raster to vector shapes
-Tracer tracer = new Tracer();
+ IntervalTracer tracer = new IntervalTracer();
 final List<BezierShape> bezierShapes =
 tracer.traceAllShapes(raster, pixelsPerNode);
 // write to SVG file

@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.testing;
 
-import net.plantabyte.drptrace.Tracer;
+import net.plantabyte.drptrace.IntervalTracer;
 import net.plantabyte.drptrace.geometry.*;
 import net.plantabyte.drptrace.intmaps.*;
 import net.plantabyte.drptrace.utils.*;
@@ -57,7 +57,7 @@ public class Main {
 			}
 		}
 		// trace the raster to vector shapes
-		Tracer tracer = new Tracer();
+		IntervalTracer tracer = new IntervalTracer();
 		final List<BezierShape> bezierShapes =
 				tracer.traceAllShapes(raster, pixelsPerNode);
 		// write to SVG file
@@ -140,7 +140,7 @@ public class Main {
 		//
 		showImg(bimg, 4);
 		//
-		Tracer tracer = new Tracer();
+		IntervalTracer tracer = new IntervalTracer();
 		final int smoothness = 10;
 		//var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
 		long t0 = System.currentTimeMillis();
@@ -181,7 +181,7 @@ public class Main {
 			brush.fillRect((int)(p.x-1), (int)(p.y-1), 3, 3);
 		}
 		showImg(bimg, 4);
-		var tracer = new Tracer();
+		var tracer = new IntervalTracer();
 		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]), 7);
 		for(var b : trace){
 			BezierPlotter.drawBezierWithControlPoints(b, brush, Color.BLUE, Color.RED);
