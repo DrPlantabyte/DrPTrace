@@ -157,4 +157,53 @@ public class Util {
 		}
 		return index;
 	}
+
+	public static class LineRegressionResult{
+		public final double slope;
+		public final double yOffset;
+		public final double rmse;
+
+		public LineRegressionResult(double slope, double yOffset, double rmse) {
+			this.slope = slope;
+			this.yOffset = yOffset;
+			this.rmse = rmse;
+		}
+	}
+
+	public static LineRegressionResult linearRegression(Vec2[] points){
+		final int count = points.length;
+		double xSum = 0;
+		double ySum = 0;
+		for(int i = 0; i < points.length; i++){
+			final var p = points[i];
+			xSum += p.x;
+			ySum += p.y;
+		}
+		// TODO: optimize speed
+		// TODO: make progressive version (update after each point added)
+		double xMean = xSum / count;
+		double yMean = ySum / count;
+		//
+		double SS_xy = 0;
+		double SS_xx = 0;
+		for(int i = 0; i < points.length; i++){
+			final var p = points[i];
+			SS_xy += p.x*p.y;
+			SS_xx += p.x*p.x;
+		}
+		SS_xy -= count * xMean * yMean;
+		SS_xx -= count * xMean * xMean;
+		final double slope = SS_xy / SS_xx;
+		final double offset = yMean - slope * xMean;
+		double se = 0;
+		for(int i = 0; i < points.length; i++){
+			final var p = points[i];
+			final double e = p.x * slope + offset;
+			se += e * e;
+		}
+		final double rmse = Math.sqrt(se/count);
+		return new LineRegressionResult(slope, offset, rmse);
+	}
+
+
 }
