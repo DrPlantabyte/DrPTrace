@@ -78,7 +78,7 @@ public class IntervalTracer {
 		final int min_beziers = closedLoop ? 2 : 1;
 		final int min_pts = closedLoop ? 3 : 2;
 		final int e_offset = closedLoop ? 0 : -1;
-		if(pathPoints.length < 3){
+		if(pathPoints.length < min_pts){
 			throw new IllegalArgumentException(String.format("Must have at least %s points to trace %s path",
 					min_pts, closedLoop ? "closed" : "open"));
 		}

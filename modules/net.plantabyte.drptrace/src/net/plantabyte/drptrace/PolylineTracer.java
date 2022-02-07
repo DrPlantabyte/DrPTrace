@@ -61,6 +61,12 @@ public class PolylineTracer {
 	private BezierShape tracePath(Vec2[] pathPoints, boolean closedLoop)
 			throws IllegalArgumentException{
 		//
+		final int min_pts = 3;
+		if(pathPoints.length < min_pts){
+			throw new IllegalArgumentException(String.format("Must have at least %s points to trace %s path",
+					min_pts, closedLoop ? "closed" : "open"));
+		}
+
 		throw new UnsupportedOperationException("Not implemented yet!");
 	}
 

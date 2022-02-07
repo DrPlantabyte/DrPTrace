@@ -158,7 +158,8 @@ public class Util {
 		return index;
 	}
 
-	public static class LineRegressionResult{
+
+	public static final class LineRegressionResult{
 		public final double slope;
 		public final double yOffset;
 		public final double rmse;
@@ -170,27 +171,28 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Performs a linear regression on the given array of data points
+	 * @param points Array of Vec2 points
+	 * @return A <code>LineRegressionResult</code> holding the relevant results from teh linear regression
+	 */
 	public static LineRegressionResult linearRegression(Vec2[] points){
 		final int count = points.length;
+		final double inverseCount = 1.0 / count;
 		double xSum = 0;
 		double ySum = 0;
-		for(int i = 0; i < points.length; i++){
-			final var p = points[i];
-			xSum += p.x;
-			ySum += p.y;
-		}
-		// TODO: optimize speed
-		// TODO: make progressive version (update after each point added)
-		double xMean = xSum / count;
-		double yMean = ySum / count;
-		//
 		double SS_xy = 0;
 		double SS_xx = 0;
 		for(int i = 0; i < points.length; i++){
 			final var p = points[i];
+			xSum += p.x;
+			ySum += p.y;
 			SS_xy += p.x*p.y;
 			SS_xx += p.x*p.x;
 		}
+		final double xMean = xSum / count;
+		final double yMean = ySum / count;
+		//
 		SS_xy -= count * xMean * yMean;
 		SS_xx -= count * xMean * xMean;
 		final double slope = SS_xy / SS_xx;
@@ -204,6 +206,5 @@ public class Util {
 		final double rmse = Math.sqrt(se/count);
 		return new LineRegressionResult(slope, offset, rmse);
 	}
-
 
 }
