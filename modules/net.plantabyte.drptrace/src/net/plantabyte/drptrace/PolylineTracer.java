@@ -71,20 +71,34 @@ public class PolylineTracer {
 		}
 		final int fittingWindowSize = 5;
 		final var nodeIndices = new ArrayList<Integer>(pathPoints.length/2);
-		final double cornerAngleThreshold = 0.75/Math.PI;
+		final double cornerAngleThreshold = 0.75 * Math.PI;
 		final int limit = pathPoints.length-1;
-		double beforeLastAngle = 0;
-		double lastAngle = 0;
+		final int quarterCount = Math.max(1, pathPoints.length/4);
+		double beforeLastAngle = Math.PI; // remember, sharp turn equals small angle
+		double lastAngle = Math.PI;
 		for(int i = 1; i < limit; i++){
 			final int start = Math.max(0,i-fittingWindowSize);
 			final int end = Math.min(pathPoints.length,i+fittingWindowSize);
-			var preSlope = Util.linearRegressionAngle(pathPoints, start, i-start);
+			var preSlope = Util.linearRegressionAngle(pathPoints, start, i-start).mul(-1);
 			var postSlope = Util.linearRegressionAngle(pathPoints, i, end-i);
 			var angle = Vec2.angle(preSlope, postSlope);
-			if(angle > cornerAngleThreshold && angle < lastAngle && lastAngle > beforeLastAngle){
-				// local maximum just passed
+			// first, make sure interval is never more than 25% of total path
+			final int lastIndex = nodeIndices.isEmpty() ? 0 : nodeIndices.get(nodeIndices.size()-1);
+			if((i - lastIndex) >= quarterCount){
+				nodeIndices.add(i);
+			} else
+			// second, detect corners
+			if(angle < cornerAngleThreshold && angle > lastAngle && lastAngle < beforeLastAngle){
+				// local turn maximum just passed (local angle minumum)
 				nodeIndices.add(i-1);
+			} else
+			// third, detect inflection points
+			if(false){
+				// TODO
 			}
+			// TODO: remove
+			System.out.print(String.format("[%.2f, %.2f, %.3f], ", pathPoints[i].x, pathPoints[i].y, angle));
+			// end remove
 			beforeLastAngle = lastAngle;
 			lastAngle = angle;
 		}

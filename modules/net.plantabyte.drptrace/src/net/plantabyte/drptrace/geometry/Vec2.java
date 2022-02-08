@@ -109,6 +109,16 @@ public final class Vec2 {
 	}
 
 	/**
+	 * Calculates the angle between two vectors drwon from this vector coordinate to the two provided. In other words,
+	 * this method calculates the angle ABC, where this Vec2 is coordinate B
+	 * @param A coordinate of one end of the angle
+	 * @param C coordinate of the other end of the angle
+	 * @return Angle between A and C around this point (point B in angle ABC)
+	 */
+	public double angleBetween(Vec2 A, Vec2 C){
+		return angle(A.sub(this), C.sub(this));
+	}
+	/**
 	 * Computes the dot product of two vectors
 	 * @param a a vector
 	 * @param b another vector
@@ -128,7 +138,7 @@ public final class Vec2 {
 
 	/**
 	 * Computes the dot product of this vector and another vector
-	 * @param another vector
+	 * @param b another vector
 	 * @return the dot product of the two vectors
 	 */
 	public double dot(Vec2 b){
