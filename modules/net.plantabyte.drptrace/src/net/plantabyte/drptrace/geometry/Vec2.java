@@ -97,6 +97,43 @@ public final class Vec2 {
 	public double dist(Vec2 v){
 		return Math.sqrt(distSquared(v));
 	}
+
+	/**
+	 * Returns the angle between two vectors
+	 * @param a a vector
+	 * @param b another vector
+	 * @return The angle in radians, ranging from 0 to PI
+	 */
+	public static double angle(Vec2 a, Vec2 b){
+		return Math.acos(dotProduct(a,b) / (a.magnitude() * b.magnitude()));
+	}
+
+	/**
+	 * Computes the dot product of two vectors
+	 * @param a a vector
+	 * @param b another vector
+	 * @return the dot product of the two vectors
+	 */
+	public static double dotProduct(Vec2 a, Vec2 b){
+		return a.x * b.x + a.y * b.y;
+	}
+
+	/**
+	 * Returns the magnitude of this vector
+	 * @return the magnitude of this vector
+	 */
+	public double magnitude(){
+		return this.dist(ORIGIN);
+	}
+
+	/**
+	 * Computes the dot product of this vector and another vector
+	 * @param another vector
+	 * @return the dot product of the two vectors
+	 */
+	public double dot(Vec2 b){
+		return dotProduct(this, b);
+	}
 	
 	/**
 	 * Checks equality with another Vec2

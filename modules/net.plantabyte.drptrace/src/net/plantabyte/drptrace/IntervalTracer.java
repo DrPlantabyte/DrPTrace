@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static net.plantabyte.drptrace.intmaps.IntMapUtil.floodFill;
+import static net.plantabyte.drptrace.trace.TraceMachine.followEdge;
 
 /**
  * The IntervalTracer class provides methods for turning a series of points into a
@@ -153,18 +154,6 @@ public class IntervalTracer {
 			}
 		}
 		return output;
-	}
-
-	private Vec2[] followEdge(final IntMap source, final int x, final int y){
-		// trace counter-clockwise around the edge
-		final int color = source.get(x,y);
-		final var pointPath = new LinkedList<Vec2>();
-		TraceMachine m = new TraceMachine(source, new Vec2i(x, y), color, pointPath);
-		do{
-			m.step();
-		}while(!m.done());
-
-		return pointPath.toArray(new Vec2[pointPath.size()]); // convert to array for better performance downstream
 	}
 
 }

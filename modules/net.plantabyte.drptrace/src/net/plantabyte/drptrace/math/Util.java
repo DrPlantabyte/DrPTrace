@@ -177,34 +177,74 @@ public class Util {
 	 * @return A <code>LineRegressionResult</code> holding the relevant results from teh linear regression
 	 */
 	public static LineRegressionResult linearRegression(Vec2[] points){
-		final int count = points.length;
+		return linearRegression(points, 0, points.length);
+	}
+
+	/**
+	 * Performs a linear regression on the given array of data points
+	 * @param points Array of Vec2 points
+	 * @param startIndex start of subset to regress
+	 * @param count number of points to regress
+	 * @return A <code>LineRegressionResult</code> holding the relevant results from teh linear regression
+	 */
+	public static LineRegressionResult linearRegression(final Vec2[] points, final int startIndex, final int count){
 		final double inverseCount = 1.0 / count;
 		double xSum = 0;
 		double ySum = 0;
 		double SS_xy = 0;
 		double SS_xx = 0;
-		for(int i = 0; i < points.length; i++){
+		for(int i = startIndex; i < count; i++){
 			final var p = points[i];
 			xSum += p.x;
 			ySum += p.y;
 			SS_xy += p.x*p.y;
 			SS_xx += p.x*p.x;
 		}
-		final double xMean = xSum / count;
-		final double yMean = ySum / count;
+		final double xMean = xSum * inverseCount;
+		final double yMean = ySum * inverseCount;
 		//
 		SS_xy -= count * xMean * yMean;
 		SS_xx -= count * xMean * xMean;
 		final double slope = SS_xy / SS_xx;
 		final double offset = yMean - slope * xMean;
 		double se = 0;
-		for(int i = 0; i < points.length; i++){
+		for(int i = startIndex; i < count; i++){
 			final var p = points[i];
 			final double e = p.x * slope + offset;
 			se += e * e;
 		}
-		final double rmse = Math.sqrt(se/count);
+		final double rmse = Math.sqrt(se*inverseCount);
 		return new LineRegressionResult(slope, offset, rmse);
+	}
+
+	/**
+	 * Performs a fast and incomplete linear regression on the given array of data points and returns the slope as a
+	 * velocity vector
+	 * @param points Array of Vec2 points
+	 * @param startIndex start of subset to regress
+	 * @param count number of points to regress
+	 * @return  the slope as a vector (dx, dy)
+	 */
+	public static Vec2 linearRegressionAngle(final Vec2[] points, final int startIndex, final int count){
+		final double inverseCount = 1.0 / count;
+		final int end = startIndex + count;
+		double xSum = 0;
+		double ySum = 0;
+		double SS_xy = 0;
+		double SS_xx = 0;
+		for(int i = startIndex; i < end; i++){
+			final var p = points[i];
+			xSum += p.x;
+			ySum += p.y;
+			SS_xy += p.x*p.y;
+			SS_xx += p.x*p.x;
+		}
+		final double xMean = xSum * inverseCount;
+		final double yMean = ySum * inverseCount;
+		//
+		SS_xy -= count * xMean * yMean;
+		SS_xx -= count * xMean * xMean;
+		return new Vec2(SS_xx, SS_xy);
 	}
 
 }
