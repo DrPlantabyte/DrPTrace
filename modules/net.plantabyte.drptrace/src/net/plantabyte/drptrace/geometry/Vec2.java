@@ -97,6 +97,108 @@ public final class Vec2 {
 	public double dist(Vec2 v){
 		return Math.sqrt(distSquared(v));
 	}
+
+	/**
+	 * Returns the angle between two vectors
+	 * @param a a vector
+	 * @param b another vector
+	 * @return The angle in radians, ranging from 0 to PI
+	 */
+	public static double angle(Vec2 a, Vec2 b){
+		return Math.acos(dotProduct(a,b) / (a.magnitude() * b.magnitude()));
+	}
+
+	/**
+	 * Averages together  an array of vectors
+	 * @param vecs array of vectors
+	 * @return the averaged vector of all provided vectors
+	 */
+	public static Vec2 average(Vec2[] vecs){
+		double xSum = 0, ySum = 0;
+		for(int i = 0; i < vecs.length; i++){
+			xSum += vecs[i].x;
+			ySum += vecs[i].y;
+		}
+		final double inverseCount = 1.0 / vecs.length;
+		return new Vec2(xSum * inverseCount, ySum * inverseCount);
+	}
+
+	/**
+	 * Averages together a subset of an array of vectors
+	 * @param vecs array of vectors
+	 * @param start starting index in <code>vecs</code>
+	 * @param count length of interval to average
+	 * @return the averaged vector of all provided vectors
+	 */
+	public static Vec2 average(Vec2[] vecs, final int start, final int count){
+		final int limit = start + count;
+		double xSum = 0, ySum = 0;
+		for(int i = start; i < limit; i++){
+			xSum += vecs[i].x;
+			ySum += vecs[i].y;
+		}
+		final double inverseCount = 1.0 / count;
+		return new Vec2(xSum * inverseCount, ySum * inverseCount);
+	}
+
+	/**
+	 * Calculates the angle between two vectors drwon from this vector coordinate to the two provided. In other words,
+	 * this method calculates the angle ABC, where this Vec2 is coordinate B
+	 * @param A coordinate of one end of the angle
+	 * @param C coordinate of the other end of the angle
+	 * @return Angle between A and C around this point (point B in angle ABC)
+	 */
+	public double angleBetween(Vec2 A, Vec2 C){
+		return angle(A.sub(this), C.sub(this));
+	}
+	/**
+	 * Computes the dot product of two vectors
+	 * @param a a vector
+	 * @param b another vector
+	 * @return the dot product of the two vectors
+	 */
+	public static double dotProduct(Vec2 a, Vec2 b){
+		return a.x * b.x + a.y * b.y;
+	}
+
+	/**
+	 * Calculates the area of triangle ABC
+	 * @param a triangle vertex coordinate
+	 * @param b triangle vertex coordinate
+	 * @param c triangle vertex coordinate
+	 * @return Area of triangle ABC
+	 */
+	public static double triangleArea(Vec2 a, Vec2 b, Vec2 c){
+		return Math.abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2);
+	}
+
+	/**
+	 * Computes the Menger Curvature defined by 3 points: curvature = 4*triangleArea/(sideLength1*sideLength2*sideLength3)
+	 * @param a point 1
+	 * @param b point 2
+	 * @param c point 3
+	 * @return Menger curvature value
+	 */
+	public static double curvitureOf(Vec2 a, Vec2 b, Vec2 c){
+		return 4*triangleArea(a, b, c) / (a.dist(b)*b.dist(c)*c.dist(a));
+	}
+
+	/**
+	 * Returns the magnitude of this vector
+	 * @return the magnitude of this vector
+	 */
+	public double magnitude(){
+		return this.dist(ORIGIN);
+	}
+
+	/**
+	 * Computes the dot product of this vector and another vector
+	 * @param b another vector
+	 * @return the dot product of the two vectors
+	 */
+	public double dot(Vec2 b){
+		return dotProduct(this, b);
+	}
 	
 	/**
 	 * Checks equality with another Vec2

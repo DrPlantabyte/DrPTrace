@@ -23,6 +23,7 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.math;
 
+import net.plantabyte.drptrace.geometry.BezierCurve;
 import net.plantabyte.drptrace.geometry.Vec2;
 
 /**
@@ -156,5 +157,178 @@ public class Util {
 			}
 		}
 		return index;
+	}
+
+
+	public static final class LineRegressionResult{
+		public final double slope;
+		public final double yOffset;
+		public final double rmse;
+
+		public LineRegressionResult(double slope, double yOffset, double rmse) {
+			this.slope = slope;
+			this.yOffset = yOffset;
+			this.rmse = rmse;
+		}
+	}
+
+	/**
+	 * Performs a linear regression on the given array of data points
+	 * @param points Array of Vec2 points
+	 * @return A <code>LineRegressionResult</code> holding the relevant results from teh linear regression
+	 */
+	public static LineRegressionResult linearRegression(Vec2[] points){
+		return linearRegression(points, 0, points.length);
+	}
+
+	/**
+	 * Performs a linear regression on the given array of data points
+	 * @param points Array of Vec2 points
+	 * @param startIndex start of subset to regress
+	 * @param count number of points to regress
+	 * @return A <code>LineRegressionResult</code> holding the relevant results from teh linear regression
+	 */
+	public static LineRegressionResult linearRegression(final Vec2[] points, final int startIndex, final int count){
+		final double inverseCount = 1.0 / count;
+		double xSum = 0;
+		double ySum = 0;
+		double SS_xy = 0;
+		double SS_xx = 0;
+		for(int i = startIndex; i < count; i++){
+			final var p = points[i];
+			xSum += p.x;
+			ySum += p.y;
+			SS_xy += p.x*p.y;
+			SS_xx += p.x*p.x;
+		}
+		final double xMean = xSum * inverseCount;
+		final double yMean = ySum * inverseCount;
+		//
+		SS_xy -= count * xMean * yMean;
+		SS_xx -= count * xMean * xMean;
+		final double slope = SS_xy / SS_xx;
+		final double offset = yMean - slope * xMean;
+		double se = 0;
+		for(int i = startIndex; i < count; i++){
+			final var p = points[i];
+			final double e = p.x * slope + offset;
+			se += e * e;
+		}
+		final double rmse = Math.sqrt(se*inverseCount);
+		return new LineRegressionResult(slope, offset, rmse);
+	}
+
+	/**
+	 * Performs a fast and incomplete linear regression on the given array of data points and returns the slope as a
+	 * velocity vector
+	 * @param points Array of Vec2 points
+	 * @param startIndex start of subset to regress
+	 * @param count number of points to regress
+	 * @return  the slope as a vector (dx, dy)
+	 */
+	public static Vec2 linearRegressionAngle(final Vec2[] points, final int startIndex, final int count){
+		final double inverseCount = 1.0 / count;
+		final int end = startIndex + count;
+		double xSum = 0;
+		double ySum = 0;
+		double SS_xy = 0;
+		double SS_xx = 0;
+		double SS_yy = 0;
+		for(int i = startIndex; i < end; i++){
+			final var p = points[i];
+			xSum += p.x;
+			ySum += p.y;
+			SS_xy += p.x*p.y;
+			SS_xx += p.x*p.x;
+			SS_yy += p.y*p.y;
+		}
+		final double xMean = xSum * inverseCount;
+		final double yMean = ySum * inverseCount;
+		// WARNING: data may be a perfectly vertical line!
+		SS_xy -= count * xMean * yMean;
+		SS_xx -= count * xMean * xMean;
+		SS_yy -= count * yMean * yMean;
+		if(SS_yy < SS_xx) {
+			// more horizontal than vertical
+			return new Vec2(SS_xx, SS_xy);
+		} else {
+			// more vertical than horizontal
+			return new Vec2(SS_xy, SS_yy);
+		}
+	}
+
+	/**
+	 * Applies a rolling average to an array
+	 * @param values array to average
+	 * @param windowSize Th rolling average window size (must be greater than 0, will nbe rounded up to the next odd number)
+	 * @return a new array with averaged values
+	 */
+	public static double[] rollingAverage(final double[] values, final int windowSize){
+		final int halfSize = Math.min(windowSize, values.length)/2;
+		final double inverseWindowSize = 1.0 / (double)(2 * halfSize + 1);
+		final double[] output = new double[values.length];
+		final int limit = values.length-1;
+		for(int i = 0; i < values.length; ++i){
+			double sum = 0;
+			for(int d = -halfSize; d <= halfSize; ++d){
+				sum += values[Math.min(limit,Math.max(0, i+d))];
+			}
+			output[i] = sum * inverseWindowSize;
+		}
+		return output;
+	}
+
+	/**
+	 * Estimates the root mean squared error (RMSE) for a bezier curve to a series of points. The bezier path is
+	 * approximated, so the returned RMSE is not guarenteed to be especially accurate
+	 * @param b a bezier curve
+	 * @param pathPoints a series of points
+	 * @return the RMSE of the points relative to the bezier curve
+	 */
+	public static double RMSE(final BezierCurve b, final Vec2[] pathPoints){
+		return RMSE(b, pathPoints, 0, pathPoints.length);
+	}
+
+	/**
+	 * Estimates the root mean squared error (RMSE) for a bezier curve to a series of points. The bezier path is
+	 * approximated, so the returned RMSE is not guarenteed to be especially accurate
+	 * @param b a bezier curve
+	 * @param pathPoints a series of points
+	 * @param index array position index
+	 * @param count length of subset of array to fit
+	 * @return the RMSE of the points relative to the bezier curve
+	 */
+	public static double RMSE(final BezierCurve b, final Vec2[] pathPoints, final int index, final int count){
+		final int limit = index+count;
+		final int k = 16; // tune for balancing performance and accuracy
+		double totalRSE = 0;
+		final Vec2[] bPoints = b.makePoints(k);
+		// RMSE points to bezier
+		for(int i = index; i < limit; i++){
+			var p = pathPoints[i];
+			double RSE = Double.MAX_VALUE;
+			// approximating bezier as line segments to get mean squared error
+			// (lowest squared error of all line segments for each point)
+			for(int s = 1; s < k; s++){
+				var L1 = bPoints[s-1];
+				var L2 = bPoints[s];
+				double dist = Util.distFromPointToLineSegment(L1, L2, p);
+				if(dist < RSE) {RSE = dist;}
+			}
+			totalRSE += RSE;
+		}
+		// RMSE bezier to points
+		for(int i = 0; i < bPoints.length; i++){
+			var p = bPoints[i];
+			double RSE = Double.MAX_VALUE;
+			for(int s = index+1; s < limit; s++){
+				var L1 = pathPoints[s-1];
+				var L2 = pathPoints[s];
+				double dist = Util.distFromPointToLineSegment(L1, L2, p);
+				if(dist < RSE) {RSE = dist;}
+			}
+			totalRSE += RSE;
+		}
+		return totalRSE / count;
 	}
 }

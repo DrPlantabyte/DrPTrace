@@ -1,6 +1,6 @@
 package net.plantabyte.drptrace.testing;
 
-import net.plantabyte.drptrace.Tracer;
+import net.plantabyte.drptrace.*;
 import net.plantabyte.drptrace.geometry.*;
 import net.plantabyte.drptrace.intmaps.*;
 import net.plantabyte.drptrace.utils.*;
@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
 	public static void main(String[] args){
@@ -28,8 +29,8 @@ public class Main {
 			System.out.println(i+": "+args[i]);
 		}
 		//
-		AlgorithmDevelopment.main(args);
-		System.exit(0);
+//		AlgorithmDevelopment.main(args);
+//		System.exit(0);
 		//
 		test1();
 		test2();
@@ -37,9 +38,102 @@ public class Main {
 		test4();
 		test5();
 		test6();
+		test7();
 		System.exit(0);
 	}
-	
+
+
+	private static void test7() {
+		print("Test 7");
+		int h = 100, w = 200;
+		var bimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		var brush = bimg.createGraphics();
+		brush.setColor(Color.WHITE);
+		brush.fillRect(0,0,w,h);
+		brush.setColor(Color.GRAY);
+		//
+		List<Vec2> pathPoints = new ArrayList<>();
+		double r = 33.0, centerX = 50, centerY = 50;
+		for(double theta = 0; theta < 2*Math.PI; theta += 0.2){
+			var p = new Vec2(
+					Math.round(-r * Math.sin(theta) + 0.3*r*Math.sin(3.3*theta) + centerX),
+					Math.round(r*Math.cos(theta) + centerY));
+			pathPoints.add(p);
+		}
+		for(var p : pathPoints){
+			brush.fillRect((int)(p.x-1), (int)(p.y-1), 3, 3);
+		}
+		showImg(bimg, 4);
+		var tracer = new PolylineTracer();
+		List<BezierCurve> traceShape = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]));
+		for(var b : traceShape){
+			BezierPlotter.drawBezierWithControlPoints(b, brush, Color.BLUE, Color.RED);
+		}
+		showImg(bimg, 4);
+		////
+
+		bimg = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+		brush = bimg.createGraphics();
+		brush.setColor(Color.WHITE);
+		brush.fillRect(0,0,w,h);
+		//
+		brush.setColor(Color.BLACK);
+		brush.fillOval(w/4,h/4,w/2,h/2);
+		brush.fillOval(w/16,h/16,w/16,h/8);
+		brush.setColor(Color.WHITE);
+		brush.fillOval(w/4+4,h/4+4,w/2-8,h/2-8);
+		brush.setColor(Color.BLACK);
+		brush.fillOval(w/4+16,h/4+16,w/2-32,h/2-32);
+		brush.setColor(Color.WHITE);
+		brush.fillRect(w/2,h/4+16,1,1);
+		brush.fillRect(w/2+1,h/4+16+1,1,1);
+		brush.fillRect(w/2+2,h/4+16+2,1,1);
+		brush.fillRect(w/2+2,h/4+16,1,1);
+		brush.fillRect(w/2+3,h/4+16+1,1,1);
+		brush.fillRect(w/2+4,h/4+16+2,1,1);
+		bimg.setRGB(10, h-10, 0xff000000);
+		//
+		showImg(bimg, 4);
+		var bigImg = scaleImage(bimg, 4);
+		brush = bigImg.createGraphics();
+		//
+		//var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
+		long t0 = System.currentTimeMillis();
+		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg));
+		long t1 = System.currentTimeMillis();
+		System.out.printf("Tracing took %s ms\n", (t1-t0));
+		results.stream().forEach((BezierShape s) -> s.scale(4.0, Vec2.ORIGIN));
+		for(var e : results){
+			int color = e.getColor();
+			var trace = e;
+
+			brush.setColor(Color.RED);
+			for(var bezier : trace){
+				BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
+//				BezierPlotter.drawBezier(bezier, brush);
+			}
+		}
+		showImg(bigImg, 2);
+		// write to SVG file
+		try(BufferedWriter out = Files.newBufferedWriter(
+				Paths.get("out.svg"), StandardCharsets.UTF_8)
+		){
+			out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+			out.write(String.format("<svg width=\"%s\" height=\"%s\" id=\"svgroot\" version=\"1.1\" viewBox=\"0 0 %s %s\" xmlns=\"http://www.w3.org/2000/svg\">",
+					bigImg.getWidth(), bigImg.getHeight(), bigImg.getWidth(), bigImg.getHeight()));
+			for(BezierShape shape : results) {
+				Color c = new Color(shape.getColor());
+				String hexColor = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+				out.write(String.format(
+						"<path style=\"fill:%s\" d=\"%s\" />",
+						hexColor, shape.toSVGPathString()));
+			}
+			out.write("</svg>");
+		} catch(IOException e){
+			e.printStackTrace(System.err);
+		}
+	}
+
 	private static void test6() {
 		print("Test 6");
 		// initialize raster with red target pattern
@@ -57,9 +151,9 @@ public class Main {
 			}
 		}
 		// trace the raster to vector shapes
-		Tracer tracer = new Tracer();
+		Tracer tracer = new IntervalTracer(pixelsPerNode);
 		final List<BezierShape> bezierShapes =
-				tracer.traceAllShapes(raster, pixelsPerNode);
+				tracer.traceAllShapes(raster);
 		// write to SVG file
 		try(BufferedWriter out = Files.newBufferedWriter(
 				Paths.get("out.svg"), StandardCharsets.UTF_8)
@@ -90,7 +184,7 @@ public class Main {
 				String n = f.getName().toLowerCase();
 				return f.isDirectory() || n.endsWith(".png") || n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".gif");
 			}
-			
+
 			@Override
 			public String getDescription() {
 				return "Images (.png, .jpg, .gif)";
@@ -140,17 +234,17 @@ public class Main {
 		//
 		showImg(bimg, 4);
 		//
-		Tracer tracer = new Tracer();
 		final int smoothness = 10;
+		Tracer tracer = new IntervalTracer(smoothness);
 		//var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
 		long t0 = System.currentTimeMillis();
-		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg), smoothness);
+		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg));
 		long t1 = System.currentTimeMillis();
 		System.out.printf("Tracing took %s ms\n", (t1-t0));
 		for(var e : results){
 			int color = e.getColor();
 			var trace = e;
-			
+
 			brush.setColor(Color.RED);
 			for(var bezier : trace){
 //				BezierPlotter.drawBezierWithControlPoints(bezier, brush, Color.BLUE, Color.RED);
@@ -159,7 +253,7 @@ public class Main {
 		}
 		showImg(bimg, 4);
 	}
-	
+
 	private static void test3() {
 		print("Test 3");
 		int h = 100, w = 200;
@@ -181,8 +275,8 @@ public class Main {
 			brush.fillRect((int)(p.x-1), (int)(p.y-1), 3, 3);
 		}
 		showImg(bimg, 4);
-		var tracer = new Tracer();
-		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]), 7);
+		var tracer = new IntervalTracer(7);
+		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]));
 		for(var b : trace){
 			BezierPlotter.drawBezierWithControlPoints(b, brush, Color.BLUE, Color.RED);
 		}
@@ -234,15 +328,20 @@ public class Main {
 		JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(bimg)));
 	}
 	private static void showImg(final BufferedImage bimg, int mag) {
+		var bimg2 = scaleImage(bimg, mag);
+		JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(bimg2)));
+	}
+
+	private static BufferedImage scaleImage(BufferedImage bimg, int scale){
 		int w = bimg.getWidth();
 		int h = bimg.getHeight();
-		BufferedImage bimg2 = new BufferedImage(w*mag, h*mag, BufferedImage.TYPE_INT_ARGB);
+		BufferedImage bimg2 = new BufferedImage(w*scale, h*scale, BufferedImage.TYPE_INT_ARGB);
 		AffineTransform at = new AffineTransform();
-		at.scale(mag, mag);
+		at.scale(scale, scale);
 		AffineTransformOp scaleOp =
 				new AffineTransformOp(at, AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
 		bimg2 = scaleOp.filter(bimg, bimg2);
-		JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(bimg2)));
+		return bimg2;
 	}
 	
 	private static void print(Object... args) {

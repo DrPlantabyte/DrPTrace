@@ -34,7 +34,9 @@ import java.util.List;
  * This class is not thread safe.
  */
 public class BezierShape extends ArrayList<BezierCurve> {
+	/** color, whcih might be ARGB or an index */
 	private int color = 0;
+	/** is closed or open loop? */
 	private boolean closedLoop = false;
 	
 	/**

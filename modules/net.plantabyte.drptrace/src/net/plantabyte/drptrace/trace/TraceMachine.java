@@ -27,6 +27,7 @@ import net.plantabyte.drptrace.IntMap;
 import net.plantabyte.drptrace.geometry.Vec2;
 import net.plantabyte.drptrace.geometry.Vec2i;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ public class TraceMachine{
 		this.src = source;
 		this.pos = new Corner(startPoint);
 		this.initialPos = pos;
-		this.oldPos = pos.down();
+		this.oldPos = pos.left();
 		this.color = color;
 		this.midpoints = pointTacker;
 	}
@@ -182,5 +183,24 @@ public class TraceMachine{
 		// finally, update the position
 		oldPos = pos;
 		pos = newPos;
+	}
+
+	/**
+	 * Traces the edge of a raster in the counter-clockwise directions
+	 * @param source Raster bitmap
+	 * @param x starting x coordinate
+	 * @param y starting y coordinate
+	 * @return An array of points outlining the shape at (x, y)
+	 */
+	public static Vec2[] followEdge(final IntMap source, final int x, final int y){
+		// trace counter-clockwise around the edge
+		final int color = source.get(x,y);
+		final var pointPath = new LinkedList<Vec2>();
+		TraceMachine m = new TraceMachine(source, new Vec2i(x, y), color, pointPath);
+		do{
+			m.step();
+		}while(!m.done());
+
+		return pointPath.toArray(new Vec2[pointPath.size()]); // convert to array for better performance downstream
 	}
 }

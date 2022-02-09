@@ -24,7 +24,7 @@ SOFTWARE.
 package net.plantabyte.drptrace.utils;
 
 import imagemagick.Quantize;
-import net.plantabyte.drptrace.Tracer;
+import net.plantabyte.drptrace.*;
 import net.plantabyte.drptrace.geometry.BezierShape;
 import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
 
@@ -66,8 +66,8 @@ public class ImageTracer {
 				}
 			}
 		}
-		Tracer t = new Tracer();
-		return t.traceAllShapes(ZOrderIntMap.fromMatrix(imgMatrix), smoothness);
+		IntervalTracer t = new IntervalTracer(smoothness);
+		return t.traceAllShapes(ZOrderIntMap.fromMatrix(imgMatrix));
 	}
 	/**
 	 * Vector traces the given <code>BufferedImage</code>, creating one shape for
@@ -85,7 +85,7 @@ public class ImageTracer {
 	public static List<BezierShape> traceBufferedImage(
 			BufferedImage img, int smoothness
 	) {
-		Tracer t = new Tracer();
-		return t.traceAllShapes(new BufferedImageIntMap(img), smoothness);
+		IntervalTracer t = new IntervalTracer(smoothness);
+		return t.traceAllShapes(new BufferedImageIntMap(img));
 	}
 }
