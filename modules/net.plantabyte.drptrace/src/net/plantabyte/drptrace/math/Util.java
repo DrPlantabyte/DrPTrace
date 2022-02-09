@@ -256,4 +256,25 @@ public class Util {
 		}
 	}
 
+	/**
+	 * Applies a rolling average to an array
+	 * @param values array to average
+	 * @param windowSize Th rolling average window size (must be greater than 0, will nbe rounded up to the next odd number)
+	 * @return a new array with averaged values
+	 */
+	public static double[] rollingAverage(final double[] values, final int windowSize){
+		final int halfSize = Math.min(windowSize, values.length)/2;
+		final double inverseWindowSize = 1.0 / (double)(2 * halfSize + 1);
+		final double[] output = new double[values.length];
+		final int limit = values.length-1;
+		for(int i = 0; i < values.length; ++i){
+			double sum = 0;
+			for(int d = -halfSize; d <= halfSize; ++d){
+				sum += values[Math.min(limit,Math.max(0, i+d))];
+			}
+			output[i] = sum * inverseWindowSize;
+		}
+		return output;
+	}
+
 }

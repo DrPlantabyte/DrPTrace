@@ -9,6 +9,7 @@ import net.plantabyte.drptrace.math.Util;
 import net.plantabyte.drptrace.trace.TraceMachine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import static net.plantabyte.drptrace.intmaps.IntMapUtil.floodFill;
@@ -72,39 +73,62 @@ public class PolylineTracer {
 		final int fittingWindowSize = 5;
 		final var nodeIndices = new ArrayList<Integer>(pathPoints.length/2);
 		nodeIndices.add(0);
-		final double cornerAngleThreshold = 0.75 * Math.PI;
-		final int limit = pathPoints.length-2;
-		final int quarterCount = Math.max(1, pathPoints.length/4);
-		double beforeLastAngle = Math.PI; // remember, sharp turn equals small angle
-		double lastAngle = Math.PI;
-		for(int i = 1; i < limit; i++){
-			final int start = Math.max(0,i-fittingWindowSize);
-			final int end = Math.min(pathPoints.length,i+fittingWindowSize);
-			var preWindowAve = Vec2.average(pathPoints, start, i - start);
-			var postWindowAve = Vec2.average(pathPoints, i+1, end-(i+1));
-			var angle = pathPoints[i].angleBetween(preWindowAve, postWindowAve);
-			// first, make sure interval is never more than 25% of total path
-			final int lastIndex = nodeIndices.isEmpty() ? 0 : nodeIndices.get(nodeIndices.size()-1);
-			if((i - lastIndex) >= quarterCount){
-				nodeIndices.add(i);
-			} else
-			// second, detect corners
-			if(angle < cornerAngleThreshold && angle > lastAngle && lastAngle < beforeLastAngle){
-				// local turn maximum just passed (local angle minumum)
-				nodeIndices.add(i-1);
-			} else
-			// third, detect inflection points
-			if(false){
-				// TODO
+		if(pathPoints.length <= 16) {
+			// too small for fancy stuff
+			nodeIndices.add(pathPoints.length/4);
+			nodeIndices.add(pathPoints.length/2);
+			nodeIndices.add((3*pathPoints.length)/4);
+		} else {
+			final double cornerAngleThreshold = 0.75 * Math.PI;
+			final int limit = pathPoints.length - 2;
+			final int quarterCount = Math.max(1, pathPoints.length / 4);
+			double beforeLastAngle = Math.PI; // remember, sharp turn equals small angle
+			double lastAngle = Math.PI;
+			var curvitureBuffer = new double[pathPoints.length];
+			//Arrays.fill(curvitureBuffer, 0);
+			for (int i = 1; i < limit; i++) {
+				final var p = pathPoints[i];
+				final int start = Math.max(0, i - fittingWindowSize);
+				final int end = Math.min(pathPoints.length, i + fittingWindowSize);
+				var preWindowAve = Vec2.average(pathPoints, start, i - start);
+				var postWindowAve = Vec2.average(pathPoints, i + 1, end - (i + 1));
+				var thisWindowAve = Vec2.average(pathPoints, start, end - start);
+				var angle = p.angleBetween(preWindowAve, postWindowAve);
+				var curviture = Vec2.curvitureOf(preWindowAve, thisWindowAve, postWindowAve);
+				curvitureBuffer[i] = curviture;
+				// first, make sure interval is never more than 25% of total path
+				final int lastIndex = nodeIndices.isEmpty() ? 0 : nodeIndices.get(nodeIndices.size() - 1);
+				if ((i - lastIndex) >= quarterCount) {
+					nodeIndices.add(i);
+				} else
+					// second, detect corners
+					if (angle < cornerAngleThreshold && angle > lastAngle && lastAngle < beforeLastAngle) {
+						// local turn maximum just passed (local angle minumum)
+						nodeIndices.add(i - 1);
+					} else
+
+						beforeLastAngle = lastAngle;
+				lastAngle = angle;
+
 			}
-			// end remove
-			beforeLastAngle = lastAngle;
-			lastAngle = angle;
+			// third, add inflection points (and then resort to put things back in order)
+			final double[] curvitures = Util.rollingAverage(curvitureBuffer, 7);
+			for (int i = 2; i < curvitures.length - 2; ++i) {
+				if (curvitures[i] < curvitures[i - 1] && curvitures[i - 1] < curvitures[i - 2]
+						&& curvitures[i] < curvitures[i + 1] && curvitures[i + 1] < curvitures[i + 2]) {
+					// i is local minimum, thus is an inflection point
+					nodeIndices.add(i);
+				}
+			}
+			nodeIndices.sort(Integer::compareTo);
 		}
-		System.out.println("]; df=pandas.DataFrame(columns=['X','Y','A'], data=d); pyplot.scatter(df.X, df.Y, s=200, c=df.A, cmap='plasma'); pyplot.show()");// TODO: remove
 		final var segments = new BezierShape(nodeIndices.size()+2);
 		segments.setClosed(closedLoop);
 		for(int i = 1; i < nodeIndices.size(); i++){
+			// skip duplicates
+			if(nodeIndices.get(i-1) == nodeIndices.get(i)){
+				continue;
+			}
 			segments.add(new BezierCurve(pathPoints[nodeIndices.get(i-1)], pathPoints[nodeIndices.get(i)]));
 		}
 		segments.add(new BezierCurve(pathPoints[nodeIndices.get(nodeIndices.size()-1)], pathPoints[(pathPoints.length+e_offset)%pathPoints.length]));
@@ -112,6 +136,15 @@ public class PolylineTracer {
 		return segments;
 	}
 
+
+	private static double crossProductMagnitude(Vec2 a, Vec2 b){
+//		var c = new double[]{
+//				a[1]*b[2] - a[2]*b[1], // x
+//				a[2]*b[0] - a[0]*b[2], // y
+//				a[0]*b[1] - a[1]*b[0]  // z
+//		};
+		return a.x*b.y - a.y*b.x;
+	}
 	/**
 	 * Traces every shape (including the background) of the provided raster bitmap.
 	 * The density of bezier curves is controlled by the <code>interval</code>

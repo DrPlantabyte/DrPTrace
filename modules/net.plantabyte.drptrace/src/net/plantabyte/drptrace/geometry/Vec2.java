@@ -162,6 +162,28 @@ public final class Vec2 {
 	}
 
 	/**
+	 * Calculates the area of triangle ABC
+	 * @param a triangle vertex coordinate
+	 * @param b triangle vertex coordinate
+	 * @param c triangle vertex coordinate
+	 * @return Area of triangle ABC
+	 */
+	public static double triangleArea(Vec2 a, Vec2 b, Vec2 c){
+		return Math.abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2);
+	}
+
+	/**
+	 * Computes the Menger Curvature defined by 3 points: curvature = 4*triangleArea/(sideLength1*sideLength2*sideLength3)
+	 * @param a point 1
+	 * @param b point 2
+	 * @param c point 3
+	 * @return Menger curvature value
+	 */
+	public static double curvitureOf(Vec2 a, Vec2 b, Vec2 c){
+		return 4*triangleArea(a, b, c) / (a.dist(b)*b.dist(c)*c.dist(a));
+	}
+
+	/**
 	 * Returns the magnitude of this vector
 	 * @return the magnitude of this vector
 	 */
