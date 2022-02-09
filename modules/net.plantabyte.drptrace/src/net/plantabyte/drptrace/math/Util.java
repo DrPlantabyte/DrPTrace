@@ -232,19 +232,28 @@ public class Util {
 		double ySum = 0;
 		double SS_xy = 0;
 		double SS_xx = 0;
+		double SS_yy = 0;
 		for(int i = startIndex; i < end; i++){
 			final var p = points[i];
 			xSum += p.x;
 			ySum += p.y;
 			SS_xy += p.x*p.y;
 			SS_xx += p.x*p.x;
+			SS_yy += p.y*p.y;
 		}
 		final double xMean = xSum * inverseCount;
 		final double yMean = ySum * inverseCount;
-		//
+		// WARNING: data may be a perfectly vertical line!
 		SS_xy -= count * xMean * yMean;
 		SS_xx -= count * xMean * xMean;
-		return new Vec2(SS_xx, SS_xy);
+		SS_yy -= count * yMean * yMean;
+		if(SS_yy < SS_xx) {
+			// more horizontal than vertical
+			return new Vec2(SS_xx, SS_xy);
+		} else {
+			// more vertical than horizontal
+			return new Vec2(SS_xy, SS_yy);
+		}
 	}
 
 }

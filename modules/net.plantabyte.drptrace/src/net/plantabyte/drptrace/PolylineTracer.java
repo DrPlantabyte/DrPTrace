@@ -71,17 +71,18 @@ public class PolylineTracer {
 		}
 		final int fittingWindowSize = 5;
 		final var nodeIndices = new ArrayList<Integer>(pathPoints.length/2);
+		nodeIndices.add(0);
 		final double cornerAngleThreshold = 0.75 * Math.PI;
-		final int limit = pathPoints.length-1;
+		final int limit = pathPoints.length-2;
 		final int quarterCount = Math.max(1, pathPoints.length/4);
 		double beforeLastAngle = Math.PI; // remember, sharp turn equals small angle
 		double lastAngle = Math.PI;
 		for(int i = 1; i < limit; i++){
 			final int start = Math.max(0,i-fittingWindowSize);
 			final int end = Math.min(pathPoints.length,i+fittingWindowSize);
-			var preSlope = Util.linearRegressionAngle(pathPoints, start, i-start).mul(-1);
-			var postSlope = Util.linearRegressionAngle(pathPoints, i, end-i);
-			var angle = Vec2.angle(preSlope, postSlope);
+			var preWindowAve = Vec2.average(pathPoints, start, i - start);
+			var postWindowAve = Vec2.average(pathPoints, i+1, end-(i+1));
+			var angle = pathPoints[i].angleBetween(preWindowAve, postWindowAve);
 			// first, make sure interval is never more than 25% of total path
 			final int lastIndex = nodeIndices.isEmpty() ? 0 : nodeIndices.get(nodeIndices.size()-1);
 			if((i - lastIndex) >= quarterCount){
@@ -96,20 +97,17 @@ public class PolylineTracer {
 			if(false){
 				// TODO
 			}
-			// TODO: remove
-			System.out.print(String.format("[%.2f, %.2f, %.3f], ", pathPoints[i].x, pathPoints[i].y, angle));
 			// end remove
 			beforeLastAngle = lastAngle;
 			lastAngle = angle;
 		}
+		System.out.println("]; df=pandas.DataFrame(columns=['X','Y','A'], data=d); pyplot.scatter(df.X, df.Y, s=200, c=df.A, cmap='plasma'); pyplot.show()");// TODO: remove
 		final var segments = new BezierShape(nodeIndices.size()+2);
 		segments.setClosed(closedLoop);
-		int lastIndex = 0;
-		for(int i : nodeIndices){
-			segments.add(new BezierCurve(pathPoints[lastIndex], pathPoints[i]));
-			lastIndex = i;
+		for(int i = 1; i < nodeIndices.size(); i++){
+			segments.add(new BezierCurve(pathPoints[nodeIndices.get(i-1)], pathPoints[nodeIndices.get(i)]));
 		}
-		segments.add(new BezierCurve(pathPoints[lastIndex], pathPoints[(pathPoints.length+e_offset)%pathPoints.length]));
+		segments.add(new BezierCurve(pathPoints[nodeIndices.get(nodeIndices.size()-1)], pathPoints[(pathPoints.length+e_offset)%pathPoints.length]));
 		// TODO: not done yet
 		return segments;
 	}
@@ -131,12 +129,15 @@ public class PolylineTracer {
 	 */
 	public List<BezierShape> traceAllShapes(final IntMap bitmap) throws IllegalArgumentException {
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
+		final int halfW = w/2;
 		var searchedMap = new ZOrderBinaryMap(w, h);
 		var output = new LinkedList<BezierShape>();
 		// algorithm: flood fill each patch, and for
 		// each flood fill, trace the outer edge
 		for(int y = 0; y < h; y++){
-			for(int x = 0; x < w; x++){
+			for(int tx = 0; tx < w; tx++){
+				// offset x to start search in middle of top instead of top-left
+				final int x = (tx + halfW) % w;
 				if(searchedMap.get(x, y) == 0){ // pixel not yet searched
 					// first, find a patch of color in the bitmap
 					int color = bitmap.get(x, y);

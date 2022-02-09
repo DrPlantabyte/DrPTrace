@@ -54,7 +54,7 @@ public class TraceMachine{
 		this.src = source;
 		this.pos = new Corner(startPoint);
 		this.initialPos = pos;
-		this.oldPos = pos.down();
+		this.oldPos = pos.left();
 		this.color = color;
 		this.midpoints = pointTacker;
 	}

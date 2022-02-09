@@ -109,6 +109,39 @@ public final class Vec2 {
 	}
 
 	/**
+	 * Averages together  an array of vectors
+	 * @param vecs array of vectors
+	 * @return the averaged vector of all provided vectors
+	 */
+	public static Vec2 average(Vec2[] vecs){
+		double xSum = 0, ySum = 0;
+		for(int i = 0; i < vecs.length; i++){
+			xSum += vecs[i].x;
+			ySum += vecs[i].y;
+		}
+		final double inverseCount = 1.0 / vecs.length;
+		return new Vec2(xSum * inverseCount, ySum * inverseCount);
+	}
+
+	/**
+	 * Averages together a subset of an array of vectors
+	 * @param vecs array of vectors
+	 * @param start starting index in <code>vecs</code>
+	 * @param count length of interval to average
+	 * @return the averaged vector of all provided vectors
+	 */
+	public static Vec2 average(Vec2[] vecs, final int start, final int count){
+		final int limit = start + count;
+		double xSum = 0, ySum = 0;
+		for(int i = start; i < limit; i++){
+			xSum += vecs[i].x;
+			ySum += vecs[i].y;
+		}
+		final double inverseCount = 1.0 / count;
+		return new Vec2(xSum * inverseCount, ySum * inverseCount);
+	}
+
+	/**
 	 * Calculates the angle between two vectors drwon from this vector coordinate to the two provided. In other words,
 	 * this method calculates the angle ABC, where this Vec2 is coordinate B
 	 * @param A coordinate of one end of the angle
