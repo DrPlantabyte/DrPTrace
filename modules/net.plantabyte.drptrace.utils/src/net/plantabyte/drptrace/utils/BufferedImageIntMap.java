@@ -23,6 +23,7 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.utils;
 
+import imagemagick.Quantize;
 import net.plantabyte.drptrace.IntMap;
 import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
 
@@ -94,5 +95,41 @@ public class BufferedImageIntMap extends IntMap {
 			}
 		}
 		return out;
+	}
+
+	/**
+	 * Creates an IntMap from a given BufferedImage, reducing the number of
+	 * colors with a quanitize algorithm if requested.
+	 * @param img A BufferedImage
+	 * @param numColors if <code>numColors</code> greater than 0, then the
+	 *                  image color pallette will be quantized to this many
+	 *                  colors.
+	 * @return A ZOderIntMap copy of the given image (not a BufferedImageIntMap instance)
+	 */
+	public static IntMap fromBufferedImage(final BufferedImage img, final int numColors){
+		int[][] imgMatrix = new int[img.getHeight()][img.getWidth()];
+		for(int y = 0; y < img.getHeight(); y++){
+			for(int x = 0; x < img.getWidth(); x++){
+				imgMatrix[y][x] = img.getRGB(x, y);
+			}
+		}
+		if(numColors > 0) {
+			var palette = Quantize.quantizeImage(imgMatrix, numColors);
+			for(int y = 0; y < img.getHeight(); y++){
+				for(int x = 0; x < img.getWidth(); x++){
+					imgMatrix[y][x] = palette[imgMatrix[y][x]];
+				}
+			}
+		}
+		return ZOrderIntMap.fromMatrix(imgMatrix);
+	}
+
+	/**
+	 * Creates an IntMap from a given BufferedImage
+	 * @param img A BufferedImage
+	 * @return A ZOderIntMap copy of the given image (not a BufferedImageIntMap instance)
+	 */
+	public static IntMap fromBufferedImage(final BufferedImage img){
+		return fromBufferedImage(img, 0);
 	}
 }
