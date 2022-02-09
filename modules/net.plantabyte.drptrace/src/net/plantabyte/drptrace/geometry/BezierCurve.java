@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import static net.plantabyte.drptrace.math.Util.RMSE;
+
 /**
  * This class represents a single bezier curve
  */
@@ -174,23 +176,36 @@ public final class BezierCurve {
 	 * @param pathPoints Series of points outlining the desired path from P1 to P4
 	 */
 	public void fitToPoints(final Vec2[] pathPoints) {
-		if(pathPoints.length == 0){
+		fitToPoints(pathPoints, 0, pathPoints.length);
+	}
+
+	/**
+	 *
+	 * Adjusts the control points of this instance to fit to the provided point
+	 * path.
+	 * @param pathPoints Series of points outlining the desired path from P1 to P4 (inclusive of P1 and P4)
+	 * @param startIndex Index at start of range within <code>pathPoints</code>
+	 * @param length length of range within <code>pathPoints</code>
+	 */
+	public void fitToPoints(final Vec2[] pathPoints, int startIndex, int length) {
+		final int limit = startIndex + length;;
+		if(length == 0){
 			// nothing at all
 			return;
-		}else if(pathPoints.length <= 2){
+		}else if(length <= 2){
 			// no fitting, line segment
-			p[1] = pathPoints[0];
-			p[2] = pathPoints[pathPoints.length-1];
+			p[1] = pathPoints[startIndex];
+			p[2] = pathPoints[limit-1];
 			return;
 		}
 		// check for straight lines
-		var origin = pathPoints[0];
-		var endPoint = pathPoints[pathPoints.length-1];
+		var origin = pathPoints[startIndex];
+		var endPoint = pathPoints[limit-1];
 		var line = endPoint.sub(origin);
 		var theta = Math.atan2(line.y, line.x);
 		final double tolerance = 0.03125;
 		boolean isLine = true;
-		for(int i = 1; i < pathPoints.length; i++){
+		for(int i = startIndex+1; i < limit; i++){
 			var L = pathPoints[i].sub(origin);
 			if(Math.abs(Math.atan2(L.y, L.x) - theta) > tolerance){
 				isLine = false;
@@ -198,15 +213,15 @@ public final class BezierCurve {
 			}
 		}
 		if(isLine){
-			p[1] = pathPoints[0];
-			p[2] = pathPoints[pathPoints.length-1];
+			p[1] = pathPoints[startIndex];
+			p[2] = pathPoints[limit-1];
 			return;
 		}
 		// setup for using a function solver
 		double[] paramArray = {p[1].x, p[1].y, p[2].x, p[2].y};
 		Function<double[], Double> optiFunc = (double[] params) -> RMSE(
 				new BezierCurve(this.getP1(), new Vec2(params[0], params[1]), new Vec2(params[2], params[3]), this.getP4()),
-				pathPoints
+				pathPoints, startIndex, length
 		);
 				//+ (this.getP1().distSquared(this.getP2()) + this.getP4().distSquared(this.getP3())) / (this.getP1().distSquared(this.getP4())); // add bias against long control handles
 		Solver solver = new HillClimbSolver(0.1, 10000);
@@ -214,38 +229,8 @@ public final class BezierCurve {
 		this.p[1] = new Vec2(optimizedArray[0], optimizedArray[1]);
 		this.p[2] = new Vec2(optimizedArray[2], optimizedArray[3]);
 	}
-	private static double RMSE(final BezierCurve b, final Vec2[] pathPoints){
-		final int k = 16; // tune for balancing performance and accuracy
-		double totalRSE = 0;
-		final Vec2[] bPoints = b.makePoints(k);
-		// RMSE points to bezier
-		for(int i = 0; i < pathPoints.length; i++){
-			var p = pathPoints[i];
-			double RSE = Double.MAX_VALUE;
-			// approximating bezier as line segments to get mean squared error
-			// (lowest squared error of all line segments for each point)
-			for(int s = 1; s < k; s++){
-				var L1 = bPoints[s-1];
-				var L2 = bPoints[s];
-				double dist = Util.distFromPointToLineSegment(L1, L2, p);
-				if(dist < RSE) {RSE = dist;}
-			}
-			totalRSE += RSE;
-		}
-		// RMSE bezier to points
-		for(int i = 0; i < bPoints.length; i++){
-			var p = bPoints[i];
-			double RSE = Double.MAX_VALUE;
-			for(int s = 1; s < pathPoints.length; s++){
-				var L1 = pathPoints[s-1];
-				var L2 = pathPoints[s];
-				double dist = Util.distFromPointToLineSegment(L1, L2, p);
-				if(dist < RSE) {RSE = dist;}
-			}
-			totalRSE += RSE;
-		}
-		return totalRSE / pathPoints.length;
-	}
+
+
 	
 	/**
 	 * Returns debug information

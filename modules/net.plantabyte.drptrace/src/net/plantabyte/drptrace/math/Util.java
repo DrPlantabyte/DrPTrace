@@ -23,6 +23,7 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.math;
 
+import net.plantabyte.drptrace.geometry.BezierCurve;
 import net.plantabyte.drptrace.geometry.Vec2;
 
 /**
@@ -277,4 +278,57 @@ public class Util {
 		return output;
 	}
 
+	/**
+	 * Estimates the root mean squared error (RMSE) for a bezier curve to a series of points. The bezier path is
+	 * approximated, so the returned RMSE is not guarenteed to be especially accurate
+	 * @param b a bezier curve
+	 * @param pathPoints a series of points
+	 * @return the RMSE of the points relative to the bezier curve
+	 */
+	public static double RMSE(final BezierCurve b, final Vec2[] pathPoints){
+		return RMSE(b, pathPoints, 0, pathPoints.length);
+	}
+
+	/**
+	 * Estimates the root mean squared error (RMSE) for a bezier curve to a series of points. The bezier path is
+	 * approximated, so the returned RMSE is not guarenteed to be especially accurate
+	 * @param b a bezier curve
+	 * @param pathPoints a series of points
+	 * @param index array position index
+	 * @param count length of subset of array to fit
+	 * @return the RMSE of the points relative to the bezier curve
+	 */
+	public static double RMSE(final BezierCurve b, final Vec2[] pathPoints, final int index, final int count){
+		final int limit = index+count;
+		final int k = 16; // tune for balancing performance and accuracy
+		double totalRSE = 0;
+		final Vec2[] bPoints = b.makePoints(k);
+		// RMSE points to bezier
+		for(int i = index; i < limit; i++){
+			var p = pathPoints[i];
+			double RSE = Double.MAX_VALUE;
+			// approximating bezier as line segments to get mean squared error
+			// (lowest squared error of all line segments for each point)
+			for(int s = 1; s < k; s++){
+				var L1 = bPoints[s-1];
+				var L2 = bPoints[s];
+				double dist = Util.distFromPointToLineSegment(L1, L2, p);
+				if(dist < RSE) {RSE = dist;}
+			}
+			totalRSE += RSE;
+		}
+		// RMSE bezier to points
+		for(int i = 0; i < bPoints.length; i++){
+			var p = bPoints[i];
+			double RSE = Double.MAX_VALUE;
+			for(int s = index+1; s < limit; s++){
+				var L1 = pathPoints[s-1];
+				var L2 = pathPoints[s];
+				double dist = Util.distFromPointToLineSegment(L1, L2, p);
+				if(dist < RSE) {RSE = dist;}
+			}
+			totalRSE += RSE;
+		}
+		return totalRSE / count;
+	}
 }

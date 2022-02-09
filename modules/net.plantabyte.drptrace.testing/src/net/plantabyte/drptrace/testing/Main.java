@@ -114,6 +114,24 @@ public class Main {
 			}
 		}
 		showImg(bigImg, 2);
+		// write to SVG file
+		try(BufferedWriter out = Files.newBufferedWriter(
+				Paths.get("out.svg"), StandardCharsets.UTF_8)
+		){
+			out.write("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+			out.write(String.format("<svg width=\"%s\" height=\"%s\" id=\"svgroot\" version=\"1.1\" viewBox=\"0 0 %s %s\" xmlns=\"http://www.w3.org/2000/svg\">",
+					bigImg.getWidth(), bigImg.getHeight(), bigImg.getWidth(), bigImg.getHeight()));
+			for(BezierShape shape : results) {
+				Color c = new Color(shape.getColor());
+				String hexColor = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+				out.write(String.format(
+						"<path style=\"fill:%s\" d=\"%s\" />",
+						hexColor, shape.toSVGPathString()));
+			}
+			out.write("</svg>");
+		} catch(IOException e){
+			e.printStackTrace(System.err);
+		}
 	}
 
 	private static void test6() {
