@@ -24,49 +24,44 @@ import static net.plantabyte.drptrace.math.Util.RMSE;
  * sequence of bezier curves tracing that path, using an algorithm of successive
  * subdivisions of straight paths, followed by smoothing to fit the curves of the
  * path. If tracing a shape, use
- * <code>traceClosedPath(Vec2[], int)</code>; if tracing a line, use
- * <code>traceOpenPath(Vec2[], int)</code>. For tracing a whole raster image,
+ * <code>traceClosedPath(Vec2[])</code>; if tracing a line, use
+ * <code>traceOpenPath(Vec2[])</code>. For tracing a whole raster image,
  * use <code>traceAllShapes(IntMap)</code>.
+ * <p>
+ * The <code>PolylineTracer</code> traces paths by detecting corners and
+ * inflection points, making it potentially a better choice than <code>IntervalTracer</code>
+ * when tracing large shapes that possess occasional fin details,
+ * producing fewer nodes on straight edges and more nodes around small
+ * features in the path.
+ * </p>
  */
-public class PolylineTracer {
+public class PolylineTracer extends Tracer{
+	/**
+	 * The <code>PolylineTracer</code> traces paths by detecting corners and
+	 * inflection points, making it potentially a better choice than <code>IntervalTracer</code>
+	 * when tracing large shapes that possess occasional fin details,
+	 * producing fewer nodes on straight edges and more nodes around small
+	 * features in the path.
+	 */
+	public PolylineTracer(){
+		//
+	}
 	/**
 	 * Traces a series of points as a sequence of bezier curves, looping back to
-	 * the beginning to form a closed loop. The density of bezier curves is
-	 * controlled by the <code>interval</code> score. Specifically, the
-	 * interval number is the ratio of provided path points to the number of
-	 * beziers. For example, a interval of 10 means that there will be 1 bezier
-	 * for every 10 path points.
+	 * the beginning to form a closed loop if so specified by the <code>closedLoop</code>
+	 * parameter.
 	 * @param pathPoints A series of points to trace with bezier curves. MUST
-	 *                   contain at least 3 points
+	 *                   have at least 3 points for a closed loop and at least
+	 *                   2 points for an open path!
+	 * @param closedLoop If true, traceback to the starting point (index 0);
+	 *                   if false, trace to the final point
 	 * @return Returns a list of <code>BezierCurve</code>s tracing the path of
 	 * the points
 	 * @throws IllegalArgumentException Thrown if any of the input arguments are
-	 * invalid
+	 * invalid (eg too few points)
 	 */
-	public BezierShape traceClosedPath(Vec2[] pathPoints)
-			throws IllegalArgumentException {
-		return tracePath(pathPoints, true);
-	}
-
-	/**
-	 * Traces a series of points as a sequence of bezier curves. The density of
-	 * bezier curves is controlled by the <code>interval</code> score.
-	 * Specifically, the interval number is the ratio of provided path points
-	 * beziers. For example, a interval of 10 means that there will be 1 bezier
-	 * for every 10 path points.
-	 * @param pathPoints A series of points to trace with bezier curves. MUST
-	 *                   contain at least 2 points
-	 * @return Returns a list of <code>BezierCurve</code>s tracing the path of
-	 * the points
-	 * @throws IllegalArgumentException Thrown if any of the input arguments are
-	 * invalid
-	 */
-	public BezierShape traceOpenPath(Vec2[] pathPoints)
-			throws IllegalArgumentException {
-		return tracePath(pathPoints, false);
-	}
-
-	private BezierShape tracePath(Vec2[] pathPoints, boolean closedLoop)
+	@Override
+	public BezierShape tracePath(Vec2[] pathPoints, boolean closedLoop)
 			throws IllegalArgumentException{
 		//
 		final int min_pts = closedLoop ? 3 : 2;
@@ -220,49 +215,6 @@ public class PolylineTracer {
 //				a[0]*b[1] - a[1]*b[0]  // z
 //		};
 		return a.x*b.y - a.y*b.x;
-	}
-	/**
-	 * Traces every shape (including the background) of the provided raster bitmap.
-	 * The density of bezier curves is controlled by the <code>interval</code>
-	 * score. Specifically, the interval number is the ratio of provided path
-	 * points beziers. For example, a interval of 10 means that there will be 1
-	 * bezier for every 10 path points.
-	 * @param bitmap A 2D array of integer values, such that each contiguous area
-	 *               of a number is considered to be a single shape.
-	 * @return Returns a list of <code>BezierShape</code> objects, each representing
-	 * one shape from the raster. The order is important: the shapes should be drawn
-	 * in the order such that the first index is in the back and the last index is
-	 * in the front.
-	 * @throws IllegalArgumentException Thrown if any of the input arguments are
-	 * invalid
-	 */
-	public List<BezierShape> traceAllShapes(final IntMap bitmap) throws IllegalArgumentException {
-		final int w = bitmap.getWidth(), h = bitmap.getHeight();
-		final int halfW = w/2;
-		var searchedMap = new ZOrderBinaryMap(w, h);
-		var output = new LinkedList<BezierShape>();
-		// algorithm: flood fill each patch, and for
-		// each flood fill, trace the outer edge
-		for(int y = 0; y < h; y++){
-			for(int tx = 0; tx < w; tx++){
-				// offset x to start search in middle of top instead of top-left
-				final int x = (tx + halfW) % w;
-				if(searchedMap.get(x, y) == 0){ // pixel not yet searched
-					// first, find a patch of color in the bitmap
-					int color = bitmap.get(x, y);
-					// next, trace the outer perimeter of the color patch
-					var circumference = TraceMachine.followEdge(bitmap, x, y);
-					var vectorized = traceClosedPath(circumference);
-					vectorized.setColor(color);
-					vectorized.setClosed(true);
-					output.add(vectorized);
-					// finally, flood-fill the patch in the searched map
-					floodFill(bitmap, searchedMap, x, y);
-					searchedMap.set(x, y, (byte)1);
-				}
-			}
-		}
-		return output;
 	}
 
 }

@@ -32,12 +32,12 @@ public class Main {
 //		AlgorithmDevelopment.main(args);
 //		System.exit(0);
 		//
-//		test1();
-//		test2();
-//		test3();
-//		test4();
-//		test5();
-//		test6();
+		test1();
+		test2();
+		test3();
+		test4();
+		test5();
+		test6();
 		test7();
 		System.exit(0);
 	}
@@ -151,9 +151,9 @@ public class Main {
 			}
 		}
 		// trace the raster to vector shapes
-		IntervalTracer tracer = new IntervalTracer();
+		Tracer tracer = new IntervalTracer(pixelsPerNode);
 		final List<BezierShape> bezierShapes =
-				tracer.traceAllShapes(raster, pixelsPerNode);
+				tracer.traceAllShapes(raster);
 		// write to SVG file
 		try(BufferedWriter out = Files.newBufferedWriter(
 				Paths.get("out.svg"), StandardCharsets.UTF_8)
@@ -234,11 +234,11 @@ public class Main {
 		//
 		showImg(bimg, 4);
 		//
-		IntervalTracer tracer = new IntervalTracer();
 		final int smoothness = 10;
+		Tracer tracer = new IntervalTracer(smoothness);
 		//var pp = tracer.followEdge(new BufferedImageIntMap(bimg),w/2, h/2);
 		long t0 = System.currentTimeMillis();
-		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg), smoothness);
+		var results = tracer.traceAllShapes(new BufferedImageIntMap(bimg));
 		long t1 = System.currentTimeMillis();
 		System.out.printf("Tracing took %s ms\n", (t1-t0));
 		for(var e : results){
@@ -275,8 +275,8 @@ public class Main {
 			brush.fillRect((int)(p.x-1), (int)(p.y-1), 3, 3);
 		}
 		showImg(bimg, 4);
-		var tracer = new IntervalTracer();
-		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]), 7);
+		var tracer = new IntervalTracer(7);
+		List<BezierCurve> trace = tracer.traceClosedPath(pathPoints.toArray(new Vec2[0]));
 		for(var b : trace){
 			BezierPlotter.drawBezierWithControlPoints(b, brush, Color.BLUE, Color.RED);
 		}

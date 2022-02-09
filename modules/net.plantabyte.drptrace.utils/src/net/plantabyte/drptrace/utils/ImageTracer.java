@@ -66,8 +66,8 @@ public class ImageTracer {
 				}
 			}
 		}
-		IntervalTracer t = new IntervalTracer();
-		return t.traceAllShapes(ZOrderIntMap.fromMatrix(imgMatrix), smoothness);
+		IntervalTracer t = new IntervalTracer(smoothness);
+		return t.traceAllShapes(ZOrderIntMap.fromMatrix(imgMatrix));
 	}
 	/**
 	 * Vector traces the given <code>BufferedImage</code>, creating one shape for
@@ -85,7 +85,7 @@ public class ImageTracer {
 	public static List<BezierShape> traceBufferedImage(
 			BufferedImage img, int smoothness
 	) {
-		IntervalTracer t = new IntervalTracer();
-		return t.traceAllShapes(new BufferedImageIntMap(img), smoothness);
+		IntervalTracer t = new IntervalTracer(smoothness);
+		return t.traceAllShapes(new BufferedImageIntMap(img));
 	}
 }
