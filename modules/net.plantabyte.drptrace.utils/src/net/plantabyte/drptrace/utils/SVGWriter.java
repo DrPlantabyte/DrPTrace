@@ -45,6 +45,11 @@ public class SVGWriter {
 	 * writing an SVG file.
 	 */
 	public static class SVGWriterException extends Exception{
+		/**
+		 * Exception constructor
+		 * @param message error message
+		 * @param cause The actual exception that caused the problem
+		 */
 		public SVGWriterException(String message, Throwable cause){
 			super(message, cause);
 		}

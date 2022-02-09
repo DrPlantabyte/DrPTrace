@@ -55,6 +55,7 @@ public final class ZOrderIntMap extends IntMap {
 	 * indexed as <code>rowColMatrix[y][x]</code>
 	 * @param rowColMatrix 2D array in matrix index ordering (that is,
 	 *                     rowColMatrix[row index][column index], aka y-x order)
+	 * @return A Z-indexed 2D integer map corresponding to the given matrix
 	 */
 	public static ZOrderIntMap fromMatrix(int[][] rowColMatrix){
 		final int w=rowColMatrix[0].length, h=rowColMatrix.length;
