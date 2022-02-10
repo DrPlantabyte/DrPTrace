@@ -34,4 +34,36 @@ public class IntMapUtil {
 			}
 		}
 	}
+
+	/**
+	 * Wraps the provided IntMap, such that calling <code>.get(x,y)</code> on the returned instance will return a 1 if
+	 * the source position equals <code>targetValue</code> and 0 otherwise.
+	 * @param source An IntMap
+	 * @param targetValue The filter target value
+	 * @return 1 or 0
+	 */
+	public static IntMap filterByValueToBinaryMap(final IntMap source, final int targetValue){
+		return new IntMap(){
+			@Override
+			public int get(int x, int y) throws ArrayIndexOutOfBoundsException {
+				final int i = source.get(x, y);
+				return i == targetValue ? 1 : 0;
+			}
+
+			@Override
+			public int getWidth() {
+				return source.getWidth();
+			}
+
+			@Override
+			public int getHeight() {
+				return source.getHeight();
+			}
+
+			@Override
+			public IntMap clone() {
+				return filterByValueToBinaryMap(source.clone(), targetValue);
+			}
+		};
+	}
 }
