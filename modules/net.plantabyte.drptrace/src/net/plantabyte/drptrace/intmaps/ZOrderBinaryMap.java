@@ -97,6 +97,21 @@ public final class ZOrderBinaryMap extends IntMap {
 		data[index] = newVal;
 		return (int)(oldVal >>> shift) & 0x01;
 	}
+	/**
+	 * Sets the value at a given coordinate to the specified value.
+	 * @param x X coordinate
+	 * @param y Y coordinate
+	 * @param value value (0 or 1) to store at (X,Y)
+	 * @return Returns the previous value that was overwritten.
+	 * @throws ArrayIndexOutOfBoundsException Thrown if coordinate (X,Y) is out
+	 * of bounds
+	 * @throws IllegalArgumentException Thrown if <code>value</code> is not valid
+	 */
+	@Override
+	public int set(final int x, final int y, final int value)
+			throws ArrayIndexOutOfBoundsException, IllegalArgumentException{
+		return set(x,y,(byte)value);
+	}
 	
 	/**
 	 * Sets all pixels/cells to the specified value

@@ -121,6 +121,7 @@ public final class ZOrderIntMap extends IntMap {
 	 * @throws ArrayIndexOutOfBoundsException Thrown if coordinate (X,Y) is out
 	 * of bounds
 	 */
+	@Override
 	public int set(final int x, final int y, final int value)
 			throws ArrayIndexOutOfBoundsException {
 		final int i = index(x, y);

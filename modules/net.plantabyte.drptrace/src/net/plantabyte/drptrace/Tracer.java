@@ -1,6 +1,5 @@
 package net.plantabyte.drptrace;
 
-import net.plantabyte.drptrace.geometry.BezierCurve;
 import net.plantabyte.drptrace.geometry.BezierShape;
 import net.plantabyte.drptrace.geometry.Vec2;
 import net.plantabyte.drptrace.intmaps.ZOrderBinaryMap;
@@ -76,10 +75,8 @@ public abstract class Tracer {
 	 * one shape from the raster. The order is important: the shapes should be drawn
 	 * in the order such that the first index is in the back and the last index is
 	 * in the front.
-	 * @throws IllegalArgumentException Thrown if any of the input arguments are
-	 * invalid (eg too few points to trace)
 	 */
-	public List<BezierShape> traceAllShapes(final IntMap bitmap) throws IllegalArgumentException {
+	public List<BezierShape> traceAllShapes(final IntMap bitmap) {
 		final int w = bitmap.getWidth(), h = bitmap.getHeight();
 		var searchedMap = new ZOrderBinaryMap(w, h);
 		var output = new LinkedList<BezierShape>();
@@ -103,6 +100,10 @@ public abstract class Tracer {
 			}
 		}
 		return output;
+	}
+	
+	public List<BezierShape> traceColor(final IntMap bitmap, final int target){
+	
 	}
 
 }
