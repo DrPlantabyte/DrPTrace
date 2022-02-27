@@ -103,6 +103,18 @@ public abstract class Tracer {
 		return output;
 	}
 	
+	/**
+	 * Traces a specific color from an <code>IntMap</code>, returning a series of
+	 * <code>BezierShape</code> paths tracing that color from the provided
+	 * <code>IntMap</code>. Note that the colors of the returned <code>BezierShape</code>s
+	 * will either be 1 (outside edge of a color patch) or 0 (inside edge of a
+	 * color patch).
+	 * @param bitmap <code>IntMap</code> to trace
+	 * @param target the target color in <code>bitmap</code> to trace
+	 * @return A list of <code>BezierShape</code> paths tracing that color. The
+	 * colors of the returned <code>BezierShape</code>s will either be
+	 * 1 (outside edge of a color patch) or 0 (inside edge of a color patch).
+	 */
 	public List<BezierShape> traceColor(final IntMap bitmap, final int target){
 		// first, pad with 1-pixel frame and binary map to 1 for color and 0 for all else
 		var paddedIntMap = new IntMap(){
@@ -133,19 +145,25 @@ public abstract class Tracer {
 		};
 		// second, trace all shapes
 		var shapes = this.traceAllShapes(paddedIntMap);
-		// third, remove first shape because it is the frame and shift -1 X and Y
+		// third, exclude frame shape and shift -1 to X and Y
 		var deframedShapes = new ArrayList<BezierShape>(shapes.size()-1);
 		final var t = new Vec2(-1, -1);
-		boolean first = true;
+		final var bb1 = new Vec2(-0.1, -0.1);
+		final var bb2 = new Vec2(bitmap.getWidth()+0.1, bitmap.getHeight()+0.1);
 		for(var s : shapes){
 			s.translate(t);
-			if(!first) {
+			if(allInRange(bb1, bb2, s)) {
 				deframedShapes.add(s);
 			}
-			first = false;
 		}
 		// done
-		return deframedShapes
+		return deframedShapes;
 	}
 
+	private static boolean allInRange(Vec2 min, Vec2 max, BezierShape s){
+		for(var p : s){
+			if(!p.withinBoundingBox(min, max)) return false;
+		}
+		return true;
+	}
 }

@@ -282,4 +282,22 @@ public final class BezierCurve {
 		return Arrays.hashCode(p);
 	}
 	
+	/**
+	 * Checks if all points of this <code>BezierCurve</code> are within the given
+	 * bounding box.
+	 * @param p1 one corner of the bounding box
+	 * @param p2 the opposite corner of the bounding box
+	 * @return true if all points of this <code>BezierCurve</code> are within the
+	 * given bounding box, false otherwise
+	 */
+	public boolean withinBoundingBox(final Vec2 p1, final Vec2 p2) {
+		final double xmin = Math.min(p1.x, p2.x);
+		final double ymin = Math.min(p1.y, p2.y);
+		final double xmax = Math.max(p1.x, p2.x);
+		final double ymax = Math.max(p1.y, p2.y);
+		for(var pt : p){
+			if(pt.x < xmin || pt.x > xmax || pt.y < ymin || pt.y > ymax)  return false;
+		}
+		return true;
+	}
 }
