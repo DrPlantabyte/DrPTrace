@@ -139,6 +139,21 @@ public final class BezierCurve {
 				p[3].sub(center).mul(scalar).add(center)
 		);
 	}
+	
+	/**
+	 * Translates this <code>BezierCurve</code> in the direction specified by the
+	 * given Vec2
+	 * @param translation X-Y vector
+	 * @return A new <code>BezierCurve</code> that is translated relatvie to this one
+	 */
+	public BezierCurve translate(final Vec2 translation) {
+		return new BezierCurve(
+				p[0].add(translation),
+				p[1].add(translation),
+				p[2].add(translation),
+				p[3].add(translation)
+		);
+	}
 
 	/**
 	 * Generates a series of points along the bezier curve
@@ -266,4 +281,5 @@ public final class BezierCurve {
 	public int hashCode() {
 		return Arrays.hashCode(p);
 	}
+	
 }

@@ -35,7 +35,8 @@ import net.plantabyte.drptrace.intmaps.ZOrderIntMap;
  * <code>net.plantabyte.drptrace.intmaps</code> for more default implementations.
  * You can also provide your own implementation.
  *
- * Note that implementations have their own <code>set(...)</code> methods. The
+ * Note that mutable implementations should extend the <code>WritableIntMap</code>
+ * class, which provides the <code>set(...)</code> method. The
  * reason that the <code>IntMap</code> superclass does not is that what
  * constitutes a valid value depends on the specific implementation (and some
  * implementations may be read-only).
@@ -80,24 +81,6 @@ public abstract class IntMap {
 		return im;
 	}
 	
-	public static void drawOnto(
-			final IntMap src, final int srcX, final int srcY,
-			final int w, final int h,
-			final IntMap canvas, final int destX, final int destY
-	) throws IllegalArgumentException {
-		for(int dy = 0; dy < h; ++dy){
-			final int iy = srcY+dy;
-			final int oy = destY+dy;
-			for(int dx = 0; dx < w; ++dx){
-				final int ix = srcX+dx;
-				final int ox = destX+dx;
-				if(canvas.isInRange(ox,oy)) {
-					canvas.set(ox, oy, src.get(ix, iy));
-				}
-			}
-		}
-	}
-	
 	/**
 	 * Get the pixel color/cell value at the given x,y coordinate.
 	 * @param x X coordinate
@@ -107,21 +90,6 @@ public abstract class IntMap {
 	 * bounds of this <code>IntMap</code>
 	 */
 	public abstract int get(int x, int y) throws ArrayIndexOutOfBoundsException;
-	
-	
-	/**
-	 * Sets the value at a given coordinate to the specified value.
-	 * @param x X coordinate
-	 * @param y Y coordinate
-	 * @param value value to store at (X,Y)
-	 * @return Returns the previous value that was overwritten.
-	 * @throws ArrayIndexOutOfBoundsException Thrown if coordinate (X,Y) is out
-	 * of bounds
-	 * @throws IllegalArgumentException Thrown if <code>value</code> is not valid
-	 * for this type of IntMap (eg trying to store a "2" in a binary map)
-	 */
-	public abstract int set(final int x, final int y, final int value)
-			throws ArrayIndexOutOfBoundsException, IllegalArgumentException;
 	
 	/**
 	 * Gets the width of this <code>IntMap</code>

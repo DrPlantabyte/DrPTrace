@@ -23,13 +23,13 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.intmaps;
 
-import net.plantabyte.drptrace.IntMap;
+import net.plantabyte.drptrace.WritableIntMap;
 
 /**
  * For 256-color raster images, this <code>IntMap</code> class wil provide the
  * best performance and memory usage.
  */
-public final class ZOrderByteMap extends IntMap {
+public final class ZOrderByteMap extends WritableIntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide

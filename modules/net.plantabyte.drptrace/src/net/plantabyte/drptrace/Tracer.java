@@ -4,6 +4,7 @@ import net.plantabyte.drptrace.geometry.BezierShape;
 import net.plantabyte.drptrace.geometry.Vec2;
 import net.plantabyte.drptrace.intmaps.ZOrderBinaryMap;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -103,7 +104,48 @@ public abstract class Tracer {
 	}
 	
 	public List<BezierShape> traceColor(final IntMap bitmap, final int target){
-	
+		// first, pad with 1-pixel frame and binary map to 1 for color and 0 for all else
+		var paddedIntMap = new IntMap(){
+			@Override
+			public int get(final int x, final int y)
+					throws ArrayIndexOutOfBoundsException {
+				if(bitmap.get(x-1, y-1) == target){
+					return 1;
+				} else {
+					return 0;
+				}
+			}
+			
+			@Override
+			public int getWidth() {
+				return bitmap.getWidth()+2;
+			}
+			
+			@Override
+			public int getHeight() {
+				return bitmap.getHeight()+2;
+			}
+			
+			@Override
+			public IntMap clone() {
+				throw new UnsupportedOperationException("Cannot clone this anonymous IntMap class");
+			}
+		};
+		// second, trace all shapes
+		var shapes = this.traceAllShapes(paddedIntMap);
+		// third, remove first shape because it is the frame and shift -1 X and Y
+		var deframedShapes = new ArrayList<BezierShape>(shapes.size()-1);
+		final var t = new Vec2(-1, -1);
+		boolean first = true;
+		for(var s : shapes){
+			s.translate(t);
+			if(!first) {
+				deframedShapes.add(s);
+			}
+			first = false;
+		}
+		// done
+		return deframedShapes
 	}
 
 }

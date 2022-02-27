@@ -23,13 +23,13 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.intmaps;
 
-import net.plantabyte.drptrace.IntMap;
+import net.plantabyte.drptrace.WritableIntMap;
 
 /**
  * Standard <code>IntMap</code> implementation. It uses Z-Ordering to improve
  * cache coherence and therefore tracing performance.
  */
-public final class ZOrderIntMap extends IntMap {
+public final class ZOrderIntMap extends WritableIntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow; // number of chunks wide

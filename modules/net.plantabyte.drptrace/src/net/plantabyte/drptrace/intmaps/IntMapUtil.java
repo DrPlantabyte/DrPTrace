@@ -1,6 +1,7 @@
 package net.plantabyte.drptrace.intmaps;
 
 import net.plantabyte.drptrace.IntMap;
+import net.plantabyte.drptrace.WritableIntMap;
 import net.plantabyte.drptrace.geometry.Vec2i;
 
 import java.util.LinkedList;
@@ -65,5 +66,37 @@ public class IntMapUtil {
 				return filterByValueToBinaryMap(source.clone(), targetValue);
 			}
 		};
+	}
+	
+	/**
+	 * Copies a region of elements from the source <code>IntMap</code> into the
+	 * given <code>WritableIntMap</code>
+	 * @param src The <code>IntMap</code> to draw onto <code>canvas</code>
+	 * @param srcX X coordinate of upper-left corner of region to copy
+	 * @param srcY Y coordinate of upper-left corner of region to copy
+	 * @param w Width of region to copy
+	 * @param h Height of region to copy
+	 * @param canvas The destination <code>WritableIntMap</code> to modify
+	 * @param destX X coordinate of upper-left corner of the destination
+	 * @param destY Y coordinate of upper-left corner of the destination
+	 * @throws IllegalArgumentException Thrown if the data in <code>src</code> is
+	 * not compatible with <code>canvas</code>
+	 */
+	public static void drawOnto(
+			final IntMap src, final int srcX, final int srcY,
+			final int w, final int h,
+			final WritableIntMap canvas, final int destX, final int destY
+	) throws IllegalArgumentException {
+		for(int dy = 0; dy < h; ++dy){
+			final int iy = srcY+dy;
+			final int oy = destY+dy;
+			for(int dx = 0; dx < w; ++dx){
+				final int ix = srcX+dx;
+				final int ox = destX+dx;
+				if(canvas.isInRange(ox,oy)) {
+					canvas.set(ox, oy, src.get(ix, iy));
+				}
+			}
+		}
 	}
 }

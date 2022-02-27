@@ -23,7 +23,7 @@ SOFTWARE.
  */
 package net.plantabyte.drptrace.intmaps;
 
-import net.plantabyte.drptrace.IntMap;
+import net.plantabyte.drptrace.WritableIntMap;
 
 import java.util.Arrays;
 
@@ -32,7 +32,7 @@ import java.util.Arrays;
  * provides high performance and very small memory usage by storing the pixels/cells
  * as individual bits.
  */
-public final class ZOrderBinaryMap extends IntMap {
+public final class ZOrderBinaryMap extends WritableIntMap {
 	private final int width;
 	private final int height;
 	private final int chunksPerRow;
@@ -169,7 +169,7 @@ public final class ZOrderBinaryMap extends IntMap {
 	 * @return A new <code>IntMap</code> with identical data to this one.
 	 */
 	@Override
-	public IntMap clone() {
+	public ZOrderBinaryMap clone() {
 		var copy = new ZOrderBinaryMap(this.getWidth(), this.getHeight());
 		System.arraycopy(this.data, 0, copy.data, 0, this.data.length);
 		return copy;

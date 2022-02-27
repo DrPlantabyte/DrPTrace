@@ -159,4 +159,14 @@ public class BezierShape extends ArrayList<BezierCurve> {
 			this.set(i, this.get(i).scaleAroundPoint(scalar, origin));
 		}
 	}
+	
+	/**
+	 * Translates this <code>BezierShape</code> along the specified vector
+	 * @param translation Translation vector
+	 */
+	public void translate(Vec2 translation){
+		for(int i = 0; i < this.size(); i++){
+			this.set(i, this.get(i).translate(translation));
+		}
+	}
 }
