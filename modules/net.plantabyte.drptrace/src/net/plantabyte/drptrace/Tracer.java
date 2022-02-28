@@ -161,9 +161,16 @@ public abstract class Tracer {
 	}
 
 	private static boolean allInRange(Vec2 min, Vec2 max, BezierShape s){
+		final var xmin = Math.min(min.x, max.x);
+		final var ymin = Math.min(min.y, max.y);
+		final var xmax = Math.max(min.x, max.x);
+		final var ymax = Math.max(min.y, max.y);
 		for(var p : s){
-			if(!p.withinBoundingBox(min, max)) return false;
+			if(!(inRange(p.)))
 		}
 		return true;
+	}
+	private static boolean inRange(double x, double xmin, double xmax){
+		return x >= xmin && x <= xmax;
 	}
 }
