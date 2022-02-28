@@ -24,24 +24,74 @@ import java.util.stream.Collectors;
 
 public class Main {
 	public static void main(String[] args){
-		System.out.println("Starting...");
-		for(int i = 0; i < args.length; i++){
-			System.out.println(i+": "+args[i]);
-		}
-		//
+		try {
+			System.out.println("Starting in "+System.getProperty("user.dir")+"...");
+			for (int i = 0; i < args.length; i++) {
+				System.out.println(i + ": " + args[i]);
+			}
+			//
 //		AlgorithmDevelopment.main(args);
 //		System.exit(0);
-		//
-		test1();
-		test2();
-		test3();
-		test4();
-		test5();
-		test6();
-		test7();
-		System.exit(0);
+			//
+//			test1();
+//			test2();
+//			test3();
+//			test4();
+//			test5();
+//			test6();
+//			test7();
+			test8();
+			System.exit(0);
+		}catch (Exception ex){
+			ex.printStackTrace(System.err);
+			System.exit(1);
+		}
 	}
 
+
+	private static void test8() throws Exception{
+		print("Test 8");
+		var tracer = new PolylineTracer();
+		var testBimg = ImageIO.read(Main.class.getResource("test-img-5.png"));
+		var bitmap = BufferedImageIntMap.fromBufferedImage(testBimg);
+		int color = 0xFF24FF2E;
+		var trace = tracer.traceColor(bitmap, color);
+		String svgTemplate = """
+<svg
+   width="800"
+   height="600"
+   viewBox="0 0 800 600"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <path
+     style="${STYLE}"
+     fill-rule="evenodd"
+     d="${D}"
+     id="path1221" />
+</svg>""";
+		{
+			final var sb = new StringBuilder();
+			trace.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
+			var svg1 = svgTemplate
+					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
+					.replace("${D}", sb.toString());
+			Files.writeString(Paths.get("test8A.svg"), svg1);
+		}
+		int nonColor = 0xFF123456;
+		var trace2 = tracer.traceColor(bitmap, nonColor);
+		{
+			final var sb = new StringBuilder();
+			trace2.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
+			var svg2 = svgTemplate
+					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
+					.replace("${D}", sb.toString());
+			Files.writeString(Paths.get("test8B.svg"), svg2);
+		}
+		// should be empty
+
+	}
 
 	private static void test7() {
 		print("Test 7");

@@ -121,7 +121,7 @@ public abstract class Tracer {
 			@Override
 			public int get(final int x, final int y)
 					throws ArrayIndexOutOfBoundsException {
-				if(bitmap.get(x-1, y-1) == target){
+				if(bitmap.isInRange(x-1, y-1) && bitmap.get(x-1, y-1) == target){
 					return 1;
 				} else {
 					return 0;
