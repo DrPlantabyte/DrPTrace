@@ -166,11 +166,19 @@ public abstract class Tracer {
 		final var xmax = Math.max(min.x, max.x);
 		final var ymax = Math.max(min.y, max.y);
 		for(var p : s){
-			if(!(inRange(p.)))
+			// ignoring control points because a curve starting and ending in the frame may can control points outside it
+			if(!(
+					inRange(p.getP1().x, xmin, xmax)
+					&& inRange(p.getP1().y, ymin, ymax)
+					&& inRange(p.getP4().x, xmin, xmax)
+					&& inRange(p.getP4().y, ymin, ymax)
+			)){
+				return false;
+			}
 		}
 		return true;
 	}
-	private static boolean inRange(double x, double xmin, double xmax){
-		return x >= xmin && x <= xmax;
+	private static boolean inRange(double n, double min, double max){
+		return n >= min && n <= max;
 	}
 }

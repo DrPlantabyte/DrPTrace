@@ -54,8 +54,6 @@ public class Main {
 		var tracer = new PolylineTracer();
 		var testBimg = ImageIO.read(Main.class.getResource("test-img-5.png"));
 		var bitmap = BufferedImageIntMap.fromBufferedImage(testBimg);
-		int color = 0xFF24FF2E;
-		var trace = tracer.traceColor(bitmap, color);
 		String svgTemplate = """
 <svg
    width="800"
@@ -71,23 +69,34 @@ public class Main {
      d="${D}"
      id="path1221" />
 </svg>""";
+//		{
+//			int color = 0xFF24FF2E;
+//			var trace = tracer.traceColor(bitmap, color);
+//			final var sb = new StringBuilder();
+//			trace.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
+//			var svg1 = svgTemplate
+//					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
+//					.replace("${D}", sb.toString());
+//			Files.writeString(Paths.get("test8A.svg"), svg1);
+//		}
+//		int nonColor = 0xFF123456;
+//		var trace2 = tracer.traceColor(bitmap, nonColor);
+//		{
+//			final var sb = new StringBuilder();
+//			trace2.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
+//			var svg2 = svgTemplate
+//					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
+//					.replace("${D}", sb.toString());
+//			Files.writeString(Paths.get("test8B.svg"), svg2);
+//		}
 		{
+			var trace3 = tracer.traceColor(bitmap, 0xff2438ff);
 			final var sb = new StringBuilder();
-			trace.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
+			trace3.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
 			var svg1 = svgTemplate
-					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
+					.replace("${STYLE}", "fill:#00ffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
 					.replace("${D}", sb.toString());
-			Files.writeString(Paths.get("test8A.svg"), svg1);
-		}
-		int nonColor = 0xFF123456;
-		var trace2 = tracer.traceColor(bitmap, nonColor);
-		{
-			final var sb = new StringBuilder();
-			trace2.stream().forEach((var p) -> sb.append(p.toSVGPathString()).append(" "));
-			var svg2 = svgTemplate
-					.replace("${STYLE}", "fill:#00ff00;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-opacity:1")
-					.replace("${D}", sb.toString());
-			Files.writeString(Paths.get("test8B.svg"), svg2);
+			Files.writeString(Paths.get("test8C.svg"), svg1);
 		}
 		// should be empty
 
